@@ -1,4 +1,4 @@
-import os
+import os.path
 
 CACHE_PATH = os.path.expanduser('~/.cache/kadai')
 CACHE_DESKTOP_PATH = os.path.join(CACHE_PATH, 'desktop')

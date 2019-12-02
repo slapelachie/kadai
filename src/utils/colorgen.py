@@ -19,54 +19,87 @@ from colorthief import ColorThief
 inputfile = ''
 argv=sys.argv[1:]
 
-# Converts from RGB to HEX
-# Accepts in the format of [r, g, b]
 def rgb_to_hex(color):
-	"""Convert an rgb color to hex."""
+	"""
+	Convert an rgb color to hex.
+
+	Arguments:
+		color (list) -- list of red, green, and blue for a color [r, g, b]
+	"""
+
 	return "#%02x%02x%02x" % (*color,)
 
-# Converts from RGB to YIQ
-# Accepts in the format of [r, g, b]
 def rgb_to_yiq(color):
-	"""Sort a list of colors."""
+	"""
+	Converts from rgb to yiq
+
+	Arguments:
+		color (list) -- list of red, green, and blue for a color [r, g, b]
+	"""
+
 	return colorsys.rgb_to_yiq(*hex_to_rgb(color))
 
-# Converts from RGB to HSV
-# Accepts in the format of [r, g, b]
 def rgb_to_hsv(color):
+	"""
+	Converts from rgb to hsv
+
+	Arguments:
+		color (list) -- list of red, green, and blue for a color [r, g, b]
+	"""
 	return colorsys.rgb_to_hsv(*color)
 
-# Converts from HSV to RGB
-# Accepts in the format of [h, s, v]
 def hsv_to_rgb(color):
+	"""
+	Converts from hsv to rgb
+
+	Arguments:
+		color (list) -- list of hue, saturation, and value for a color [h, s, v]
+	"""
+
 	return [int(col) for col in colorsys.hsv_to_rgb(*color)]
 
-# Converts from HEX to RGB
-# Accepts in the format of a 6 character string with a '#'
 def hex_to_rgb(color):
-	"""Convert a hex color to rgb."""
+	"""
+	Convert a hex color to rgb.
+
+	Arguments:
+		color (string) -- hexadecimal value with the leading '#'
+	"""
+
 	return tuple(bytes.fromhex(color.strip("#")))
 
-# Darkens a specified color
-# arg color: HEX color
-# arg amount: float from 0 to 1
 def darken_color(color, amount):
-	"""Darken a hex color."""
+	"""
+	Darken a hex color.
+
+	Arguments:
+		color (string) -- hexadecimal value with the leading '#'
+		amount (float) -- value from 0 to 1
+	"""
+
 	color = [int(col * (1 - amount)) for col in hex_to_rgb(color)]
 	return rgb_to_hex(color)
 
-# Lightens a specified color
-# arg color: HEX color
-# arg amount: float from 0 to 1
 def lighten_color(color, amount):
-	"""Lighten a hex color."""
+	"""
+	Lighten a hex color.
+
+	Arguments:
+		color (string) -- hexadecimal value with the leading '#'
+		amount (float) -- value from 0 to 1
+	"""
+
 	color = [int(col + (255 - col) * amount) for col in hex_to_rgb(color)]
 	return rgb_to_hex(color)
 
-# Generate colors using ColorTheif
-# arg img: path/to/image
 def gen_colors(img):
-	"""Loop until 16 colors are generated."""
+	"""
+	Create a list of colors, max of 16 and min of 8
+	
+	Arguments:
+		img (str) -- location of the image
+	"""
+
 	color_cmd = ColorThief(img).get_palette
 	raw_colors = color_cmd(color_count=16, quality=3)
 
@@ -76,12 +109,17 @@ def gen_colors(img):
 
 	return [rgb_to_hex(color) for color in raw_colors]
 
-# Determines the distance of a list of colors from a color
-# arg col: HEX color
-# arg cols: [HEX color]
 def get_color_distance(cols):
+	"""
+	Determines the distance of a list of colors from a color
+
+	Arguments:
+		cols (list) -- list of hexidecimal formatted colors
+	"""
+
 	hsv_distance=[]
 
+	# Calculate the vibrance of the image
 	for i in range(len(cols)):
 		hsv_color = [*rgb_to_hsv(hex_to_rgb(cols[i]))]
 		vibrance = (hsv_color[1])
@@ -90,10 +128,19 @@ def get_color_distance(cols):
 
 	return hsv_distance
 
-# Creates a palette with the greatest varience
-# arg cols: [HEX color]
 def palette_varience(cols):
+	"""
+	Attempts at creating a palette with unique colors
+
+	This barely works correctly and sometimes the colors generated
+	are the same
+
+	Arguments:
+		cols (list) -- list of hexidecimal formatted colors
+	"""
+
 	distance = get_color_distance(cols)
+	# Sort the colors based on their distance
 	sorted_cols = sorted(distance, key = lambda x: x[1])
 
 	for i in range (len(sorted_cols)):
@@ -111,15 +158,23 @@ def palette_varience(cols):
 
 	return dom_sort_cols
 
-# Adjusts the colors to make visible on terminal
-# arg cols: [HEX color] list length expected to be 8
 def adjust(cols):
-	"""Create palette."""
+	"""
+	Create and fine tune the palette
+
+	Arguments:
+		cols (list) -- list of hexidecimal formatted colors, expects 8 unique colors
+	"""
+
+	# Brings the last color to the front, as it is the least vibrant
+	# and good for backgrounds
 	last_col = cols[-1]
 	cols = cols[:-1]
 	cols.insert(0,last_col)
+
 	raw_colors = [*cols, *cols]
 
+	# Darken the blacks
 	raw_colors[0] = darken_color(cols[0], 0.95)
 	raw_colors[8] = darken_color(cols[0], 0.75)        
 
@@ -137,25 +192,37 @@ def adjust(cols):
 					 col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
 
 			raw_colors[i] = rgb_to_hex(col)
+
+	# Whiten the whites
 	raw_colors[7] = lighten_color(cols[0], 0.90)
 	raw_colors[15] = lighten_color(cols[0], 0.70)
 
 	return raw_colors
 
 
-# Get the colorscheme
-# arg img: path/to/image
 def get(img):
-	"""Get colorscheme."""
+	"""
+	Generate the palette.
+	
+	Arguments:
+		img (str) -- location of the image
+	"""
 	cols = gen_colors(img)
 	new_cols = palette_varience(cols)
 	return adjust(new_cols)
 
 
 def generate(image):
- 	   # Resize the image so color processing is quicker
-		image = Image.open(image)
-		image_out = image.resize((300,150), Image.NEAREST)
-		image_out.save("/tmp/tmp.png")
-		return get('/tmp/tmp.png')
-	 
+	"""
+	Generates the color pallete pased on the image given
+
+	Arguments:
+		image (str) -- location of the image
+	"""
+
+	# Resize the image so color processing is quicker
+	image = Image.open(image)
+	image_out = image.resize((300,150), Image.NEAREST)
+	image_out.save("/tmp/tmp.png")
+	# Generate the pallete based on the small img
+	return get('/tmp/tmp.png')
