@@ -1,7 +1,7 @@
 from . import lockscreen
-from . import wallpaper
+from . import theme
 
 __all__ = [
 	"lockscreen",
-	"wallpaper",
+	"theme",
 ]

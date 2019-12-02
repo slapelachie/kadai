@@ -15,7 +15,7 @@ import subprocess
 import glob
 
 from utils.settings import CACHE_DESKTOP_PATH, CACHE_LOCKSCREEN_PATH, CACHE_PATH, CONFIG_PATH
-from generators import wallpaper
+from generators.theme import ThemeGenerator
 from generators.lockscreen import LockscreenGenerate
 
 def error_msg(msg):
@@ -64,44 +64,16 @@ def parse_args(parser):
 	if args.subcommand == "wallpaper":
 		if args.i:
 			if args.g:
-				if os.path.isfile(args.i):
-					wallpaper.generate_theme(args.i)
-				elif os.path.isdir(args.i):
-					images = get_dir_imgs(args.i)
-					for image in images:
-						wallpaper.generate_theme(os.path.join(args.i, image))
+				ThemeGenerator(args.i).generate()
 				sys.exit(0)
 			else:
-				if os.path.isfile(args.i):
-					print("Applying theme...")
-					wallpaper.apply_theme(args.i)
-					
-					if args.l:
-						print("Applying as lockscreen...")
-						LockscreenGenerate(args.i).update()
-
-				elif os.path.isdir(args.i):
-					image = get_random_image(args.i)
-					print("Applying theme...")
-					wallpaper.apply_theme(image) 
-
-					if args.l:
-						print("Applying as lockscreen...")
-						LockscreenGenerate(image).update()
+				ThemeGenerator(args.i).update(args.l)
 				sys.exit(0)
 		elif args.p:
 			if(os.path.isfile(os.path.join(CACHE_DESKTOP_PATH, "last"))):
 				with open(os.path.join(CACHE_DESKTOP_PATH, "last"), "r") as file:
 					filedata = str(file.read()).rstrip()
-					if(os.path.isfile(filedata)):
-						print("Applying last used theme...")
-						wallpaper.apply_theme(filedata)
-						LockscreenGenerate(filedata).update()
-						if args.l:
-							print("Applying as lockscreen...")
-					else:
-						error_msg("Failed to load file")
-						sys.exit(1)
+					ThemeGenerator(filedata).update(args.l)
 			else:
 				error_msg("Last file does not exist!")
 				sys.exit(1)
@@ -115,16 +87,6 @@ def parse_args(parser):
 				LockscreenGenerate(args.i).generate()
 			else:
 				LockscreenGenerate(args.i).update()	
-
-def get_dir_imgs(img_dir):
-	file_types = ("png", "jpg", "jpeg")
-	return [img.name for img in os.scandir(img_dir)
-			if img.name.lower().endswith(file_types)]
-
-def get_random_image(img_dir):
-	images = get_dir_imgs(img_dir) 
-	random.shuffle(images)
-	return os.path.join(img_dir, images[0])
 
 def main():
 	os.makedirs(CACHE_PATH, exist_ok=True)

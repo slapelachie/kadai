@@ -15,3 +15,8 @@ def md5_file(fname):
 def get_image(image):
 	if os.path.isfile(image): 
 		return os.path.abspath(image)
+
+def get_dir_imgs(img_dir):
+	file_types = ("png", "jpg", "jpeg")
+	return [img.name for img in os.scandir(img_dir)
+			if img.name.lower().endswith(file_types)]

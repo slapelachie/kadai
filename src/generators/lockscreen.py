@@ -3,6 +3,7 @@ import subprocess
 import shutil
 import re
 import random
+import sys
 from Xlib import X, display
 from Xlib.ext import randr
 
@@ -16,7 +17,10 @@ class LockscreenGenerate:
 		if os.path.isfile(image):
 			self.image = [utils.get_image(image)]
 		elif os.path.isdir(image):
-			self.image = [utils.get_image(os.path.join(image, img)) for img in get_dir_imgs(image)]
+			self.image = [utils.get_image(os.path.join(image, img)) for img in utils.get_dir_imgs(image)]
+		else:
+			print("File does not exist!")
+			sys.exit(1)
 
 		self.screen_md5 = utils.md5(subprocess.check_output(["xrandr"]))[:20]
 		
@@ -82,9 +86,3 @@ class LockscreenGenerate:
 		else:
 			self.generate()
 			self.update()
-		pass
-
-def get_dir_imgs(img_dir):
-	file_types = ("png", "jpg", "jpeg")
-	return [img.name for img in os.scandir(img_dir)
-			if img.name.lower().endswith(file_types)]
