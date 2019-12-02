@@ -151,10 +151,11 @@ def get(img):
 	new_cols = palette_varience(cols)
 	return adjust(new_cols)
 
-class ColorGen:
-	def generate(self):
+
+def generate(image):
  	   # Resize the image so color processing is quicker
-		image = Image.open(self)
+		image = Image.open(image)
 		image_out = image.resize((300,150), Image.NEAREST)
 		image_out.save("/tmp/tmp.png")
-		return get('/tmp/tmp.png') 
+		return get('/tmp/tmp.png')
+	 
