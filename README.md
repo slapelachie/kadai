@@ -15,6 +15,7 @@ This script is split into two sections, the wallpaper and the lockscreen section
 This command is executed using `kadai wallpaper ...` and is used to manage the wallpaper and theme.
 
 The arguments are the following:
+
 | Argument  | Usage |
 |-----------|-----------------------------------------------------|
 | -h, --help| Shows the help message for the wallpaper subcommand |
@@ -27,6 +28,7 @@ The arguments are the following:
 This command is executed using `kadai lockscreen ...` and is used to manage the i3lock wallpaper.
 
 The arguments are the following:
+
 | Argument  | Usage |
 |-----------|-----------------------------------------------------|
 | -h, --help| Shows the help message for the wallpaper subcommand |
