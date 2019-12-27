@@ -7,20 +7,24 @@
 import argparse
 import sys
 import os.path
+import logging
 
 from utils.settings import CACHE_DESKTOP_PATH, CACHE_LOCKSCREEN_PATH, CACHE_PATH, CONFIG_PATH
+from utils import utils
 from generators.theme import ThemeGenerator
 from generators.lockscreen import LockscreenGenerate
-
-def error_msg(msg):
-	""" This really does nothing more then add error to the start """
-	print("[ERROR]: " + msg)
 
 def get_args():
 	""" Get the args parsed from the command line and does arg handling stuff """
 
 	arg = argparse.ArgumentParser(description="Generate and switch wallpaper themes")
 	subparser = arg.add_subparsers(help='sub-command help', dest="subcommand")
+
+	arg.add_argument('-v', action='store_true',
+		help='Verbose Logging')
+
+	arg.add_argument('-q', action='store_true',
+		help='Allow only error logging')
 	
 	wall_arg = subparser.add_parser('wallpaper', help="Wallpaper related commands") 
 	lock_arg = subparser.add_parser('lockscreen', help="Lockscreen related commands") 	
@@ -60,6 +64,13 @@ def parse_args(parser):
 		parser.print_help()
 		sys.exit(1)
 
+	if args.v:
+		logging.getLogger().setLevel(15)
+
+	if args.q:
+		logging.getLogger().setLevel(logging.ERROR)
+		sys.stdout = sys.stderr = open(os.devnull, "w")
+
 	# If the subcommand 'wallpaper' is called
 	if args.subcommand == "wallpaper":
 		if args.i:
@@ -76,10 +87,10 @@ def parse_args(parser):
 					filedata = str(file.read()).rstrip()
 					ThemeGenerator(filedata).update(args.l)
 			else:
-				error_msg("Last file does not exist!")
+				logging.critical("Last file does not exist!")
 				sys.exit(1)
 		else:
-			error_msg("No file specified...")
+			logging.critical("No file specified...")
 			sys.exit(1)
 	# If the subcommand 'lockscreen' is called
 	elif args.subcommand == "lockscreen":
@@ -95,6 +106,10 @@ def main():
 	os.makedirs(CACHE_DESKTOP_PATH, exist_ok=True)
 	os.makedirs(CACHE_LOCKSCREEN_PATH, exist_ok=True)
 	os.makedirs(CONFIG_PATH, exist_ok=True)
+
+	utils.setup_logger()
+	logging.getLogger().setLevel(logging.INFO)
+	logging.getLogger().addHandler(utils.TqdmLoggingHandler())
 
 	parser = get_args()
 	parse_args(parser)

@@ -4,11 +4,15 @@ import glob
 import subprocess
 import hashlib
 import random
+import logging
+import tqdm
 
 from utils import colorgen
 from utils import utils
 from utils.settings import CACHE_DESKTOP_PATH, CONFIG_PATH
 from generators.lockscreen import LockscreenGenerate
+
+log = logging.getLogger()
 
 class ThemeGenerator:
 	"""
@@ -26,7 +30,7 @@ class ThemeGenerator:
 		elif os.path.isdir(image):
 			self.image = [utils.get_image(os.path.join(image, img)) for img in utils.get_dir_imgs(image)]
 		else:
-			print("File does not exist!")
+			logging.critical("File does not exist!")
 			sys.exit(1)
 
 	def update(self, lockscreen=False):
@@ -73,11 +77,11 @@ class ThemeGenerator:
 
 	def generate(self):
 		""" Generates the theme passed on the parent class """
-		img_count = 0
-
+		logging.info('Generating themes...')
 		# Recursively go through every image
-		for image in self.image:
-			img_count += 1
+		
+		for i in tqdm.tqdm(range(len(self.image))):
+			image = self.image[i]
 			image = utils.get_image(image)
 			md5_hash = utils.md5(image)[:20]
 			theme_path = os.path.join(CACHE_DESKTOP_PATH, md5_hash)
@@ -87,7 +91,7 @@ class ThemeGenerator:
 				# Generate the pallete
 				colors = colorgen.generate(image)
 
-				print("[" + str(img_count) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
+				log.log(15, "[" + str(i+1) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
 
 				# Get all templates in the templates folder
 				templates = glob.glob(os.path.join(CONFIG_PATH, "templates/*"))

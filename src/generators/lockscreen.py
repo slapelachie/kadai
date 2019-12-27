@@ -4,11 +4,15 @@ import shutil
 import re
 import random
 import sys
+import logging
+import tqdm
 
 from utils.settings import CACHE_LOCKSCREEN_PATH
 from utils import utils
 
 display_re = "([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+)" # Regex to find the monitor resolutions
+
+log = logging.getLogger()
 
 class LockscreenGenerate:
 	"""
@@ -32,7 +36,7 @@ class LockscreenGenerate:
 			# If the path is a directory, get all images in it and get its absolute path
 			self.image = [utils.get_image(os.path.join(image, img)) for img in utils.get_dir_imgs(image)]
 		else:
-			print("File does not exist!")
+			logging.critical("File does not exist!")
 			sys.exit(1)
 
 		# Get the output of xrandr and hash it
@@ -41,10 +45,10 @@ class LockscreenGenerate:
 
 	def generate(self):
 		"""Generate the lockscreen image"""
-		img_count = 0
+		log.info("Generating lockscreens...")
 		# Apply this function to every image in the passed list
-		for image in self.image:
-			img_count += 1
+		for i in tqdm.tqdm(range(len(self.image))):
+			image = self.image[i]
 			tmp_imgs = []
 			params = ""
 			output_img_height=0
@@ -84,7 +88,7 @@ class LockscreenGenerate:
 				# Params for this image when converted later on
 				params = params + " " + tmp_img + " -geometry +" + str(screen_x) + "+" + str(screen_y) + " -composite -fill black -colorize 50% -blur 0x4"
 			
-			print("["+ str(img_count) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
+			log.log(15, "["+ str(i+1) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
 
 			# Create the background for the final image
 			subprocess.run(["convert", "-size", str(output_img_width)+"x"+str(output_img_height), "xc:rgb(1,0,0)", img_path])

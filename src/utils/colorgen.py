@@ -5,8 +5,6 @@
 # Note: Most of this code is from pywal, but is modified to get a greater range of colors from 
 # the top 16 colors of the wallpaper
 #
-# Any print statements made in this script will be inputed into the color scheme file, so do
-# not print anything but the colors needed.
 
 import logging
 import sys
