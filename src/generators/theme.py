@@ -66,6 +66,7 @@ class ThemeGenerator:
 		subprocess.run(["feh", "--bg-fill", image])
 		subprocess.run(["i3-msg","restart"])
 		# Optional progarams
+		# subprocess.run(["killall", "-USR1", "st"])
 		subprocess.run(["spicetify","update"])
 		subprocess.run(["convert", image, "-fill", "black", "-colorize", "70%", "-blur", "0x4",
 			os.path.expanduser("~/.config/startpage/images/background")])
