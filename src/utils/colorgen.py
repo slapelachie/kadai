@@ -13,6 +13,9 @@ import sys, getopt
 import math
 from PIL import Image
 from colorthief import ColorThief
+from utils import log
+
+logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
 inputfile = ''
 argv=sys.argv[1:]
@@ -102,7 +105,7 @@ def gen_colors(img):
 	raw_colors = color_cmd(color_count=16, quality=3)
 
 	if len(raw_colors) <= 8:
-		logging.error("ColorThief couldn't generate a suitable palette.")
+		logger.error("ColorThief couldn't generate a suitable palette.")
 		sys.exit(1)
 
 	return [rgb_to_hex(color) for color in raw_colors]

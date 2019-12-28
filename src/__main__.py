@@ -10,9 +10,11 @@ import os.path
 import logging
 
 from utils.settings import CACHE_DESKTOP_PATH, CACHE_LOCKSCREEN_PATH, CACHE_PATH, CONFIG_PATH
-from utils import utils
+from utils import utils,log
 from generators.theme import ThemeGenerator
 from generators.lockscreen import LockscreenGenerate
+
+logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
 def get_args():
 	""" Get the args parsed from the command line and does arg handling stuff """
@@ -25,7 +27,7 @@ def get_args():
 
 	arg.add_argument('-q', action='store_true',
 		help='Allow only error logging')
-	
+		
 	wall_arg = subparser.add_parser('wallpaper', help="Wallpaper related commands") 
 	lock_arg = subparser.add_parser('lockscreen', help="Lockscreen related commands") 	
 
@@ -64,41 +66,39 @@ def parse_args(parser):
 		parser.print_help()
 		sys.exit(1)
 
-	if args.v:
-		logging.getLogger().setLevel(15)
+	VERBOSE_MODE = True if args.v else False
 
 	if args.q:
-		logging.getLogger().setLevel(logging.ERROR)
-		sys.stdout = sys.stderr = open(os.devnull, "w")
+		pass
 
 	# If the subcommand 'wallpaper' is called
 	if args.subcommand == "wallpaper":
 		if args.i:
 			if args.g:
-				ThemeGenerator(args.i).generate()
+				ThemeGenerator(args.i, VERBOSE_MODE).generate()
 				sys.exit(0)
 			else:
-				ThemeGenerator(args.i).update(args.l)
+				ThemeGenerator(args.i, VERBOSE_MODE).update(args.l)
 				sys.exit(0)
 		elif args.p:
 			# Check if the last file exists, if it does update to that
 			if(os.path.isfile(os.path.join(CACHE_DESKTOP_PATH, "last"))):
 				with open(os.path.join(CACHE_DESKTOP_PATH, "last"), "r") as file:
 					filedata = str(file.read()).rstrip()
-					ThemeGenerator(filedata).update(args.l)
+					ThemeGenerator(filedata, VERBOSE_MODE).update(args.l)
 			else:
-				logging.critical("Last file does not exist!")
+				logger.critical("Last file does not exist!")
 				sys.exit(1)
 		else:
-			logging.critical("No file specified...")
+			logger.critical("No file specified...")
 			sys.exit(1)
 	# If the subcommand 'lockscreen' is called
 	elif args.subcommand == "lockscreen":
 		if args.i:
 			if args.g:
-				LockscreenGenerate(args.i).generate()
+				LockscreenGenerate(args.i, VERBOSE_MODE).generate()
 			else:
-				LockscreenGenerate(args.i).update()	
+				LockscreenGenerate(args.i, VERBOSE_MODE).update()	
 
 def main():
 	# Create required directories
@@ -106,10 +106,6 @@ def main():
 	os.makedirs(CACHE_DESKTOP_PATH, exist_ok=True)
 	os.makedirs(CACHE_LOCKSCREEN_PATH, exist_ok=True)
 	os.makedirs(CONFIG_PATH, exist_ok=True)
-
-	utils.setup_logger()
-	logging.getLogger().setLevel(logging.INFO)
-	logging.getLogger().addHandler(utils.TqdmLoggingHandler())
 
 	parser = get_args()
 	parse_args(parser)

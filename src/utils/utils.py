@@ -1,38 +1,5 @@
 import hashlib
 import os
-import logging
-import tqdm
-import sys
-
-class TqdmLoggingHandler(logging.Handler):
-	def __init__(self, level=logging.NOTSET):
-		super().__init__(level)
-
-	def emit(self, record):
-		try:
-			self.setFormatter(logging.Formatter(("[%(levelname)s\033[0m] "
-				"\033[1;31m%(module)s\033[0m: "
-				"%(message)s")))
-			self.setLevel(record.lvl)
-			msg = self.format(record)
-			tqdm.tqdm.write(msg)
-			self.flush()
-		except (KeyboardInterrupt, SystemExit):
-			raise
-		except:
-			self.handleError(record)
-
-def setup_logger():
-	""" Sets up the logger """
-	logging.basicConfig(format=("[%(levelname)s\033[0m] "
-		"\033[1;31m%(module)s\033[0m: "
-		"%(message)s"),
-		level=logging.INFO,
-		stream=sys.stdout)
-	logging.addLevelName(logging.ERROR, '\033[1;31mE')
-	logging.addLevelName(logging.INFO, '\033[1;32mI')
-	logging.addLevelName(logging.WARNING, '\033[1;33mW')
-	logging.addLevelName(logging.CRITICAL, '\033[1;33mC')
 
 def md5(string):
 	"""

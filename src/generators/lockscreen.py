@@ -7,12 +7,13 @@ import sys
 import logging
 import tqdm
 
-from utils.settings import CACHE_LOCKSCREEN_PATH
-from utils import utils
+from utils.settings import CACHE_LOCKSCREEN_PATH, DEBUG_MODE
+from utils import utils, log
 
 display_re = "([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+)" # Regex to find the monitor resolutions
 
-log = logging.getLogger()
+logger = log.setup_logger(__name__+'default', logging.INFO, log.defaultLoggingHandler())
+tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
 
 class LockscreenGenerate:
 	"""
@@ -22,13 +23,20 @@ class LockscreenGenerate:
 		image (str) -- location to the image ('/home/bob/pic.png')
 	"""
 
-	def __init__(self, image):
+	def __init__(self, image, verbose=False):
 		"""
 		Default function for the LockscreenGenerate class
 
 		Arguments:
 			image (str) -- location to the image ('/home/bob/pic.png')
 		"""
+		if DEBUG_MODE:
+			logger.setLevel(logging.DEBUG)
+			tqdm_logger.setLevel(logging.DEBUG)
+		elif verbose:
+			logger.setLevel(15)
+			tqdm_logger.setLevel(15)
+
 		if os.path.isfile(image):
 			# If the path is a file, get the image and set itself to that
 			self.image = [utils.get_image(image)]
@@ -36,7 +44,7 @@ class LockscreenGenerate:
 			# If the path is a directory, get all images in it and get its absolute path
 			self.image = [utils.get_image(os.path.join(image, img)) for img in utils.get_dir_imgs(image)]
 		else:
-			logging.critical("File does not exist!")
+			logger.critical("File does not exist!")
 			sys.exit(1)
 
 		# Get the output of xrandr and hash it
@@ -45,7 +53,7 @@ class LockscreenGenerate:
 
 	def generate(self):
 		"""Generate the lockscreen image"""
-		log.info("Generating lockscreens...")
+		logger.info("Generating lockscreens...")
 		# Apply this function to every image in the passed list
 		for i in tqdm.tqdm(range(len(self.image))):
 			image = self.image[i]
@@ -88,7 +96,7 @@ class LockscreenGenerate:
 				# Params for this image when converted later on
 				params = params + " " + tmp_img + " -geometry +" + str(screen_x) + "+" + str(screen_y) + " -composite -fill black -colorize 50% -blur 0x4"
 			
-			log.log(15, "["+ str(i+1) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
+			tqdm_logger.log(15, "["+ str(i+1) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
 
 			# Create the background for the final image
 			subprocess.run(["convert", "-size", str(output_img_width)+"x"+str(output_img_height), "xc:rgb(1,0,0)", img_path])
