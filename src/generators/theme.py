@@ -90,7 +90,7 @@ class ThemeGenerator:
 		# Run external scripts
 		utils.run_post_scripts('theme', image)
 
-	def generate(self):
+	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """
 		logger.info('Generating themes...')
 		# Recursively go through every image
@@ -107,8 +107,8 @@ class ThemeGenerator:
 			tqdm_logger.debug("Setting the output for %s to %s", image, theme_path)
 
 			# If the theme file does not already exist, generate it
-			if not os.path.isfile(theme_path):
-				tqdm_logger.debug("Theme file %s doesn't exist, generating...", theme_path)
+			if not os.path.isfile(theme_path) or override:
+				tqdm_logger.debug("Generating theme file %s", theme_path)
 				# Generate the pallete
 				tqdm_logger.debug("Getting color pallete...")
 				colors = colorgen.generate(image)

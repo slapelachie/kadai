@@ -5,7 +5,6 @@
 # Wallpaper and lockscreen theme manager
 
 #TODO: Create a makescript
-#TODO: Allow the user to override themes / lockscreens
 #TODO: Template files need to go somewhere
 
 import argparse
@@ -38,22 +37,28 @@ def get_args():
 	clear_arg = subparser.add_parser('clear', help="Used for clearing KADAI data")
 
 	wall_arg.add_argument("-g", action="store_true",
-			help="generate themes")
+		help="generate themes")
 	
 	wall_arg.add_argument("-i", metavar="\"path/to/dir\"",
-			help="the input file")
+		help="the input file")
 
 	wall_arg.add_argument("-l", action="store_true",
-			help="generate and apply lockscreen")
+		help="generate and apply lockscreen")
 	
 	wall_arg.add_argument("-p", action="store_true",
 		help="Use last set theme")
+
+	wall_arg.add_argument('--override', action="store_true",
+		help="Override exisiting themes")
 	
 	lock_arg.add_argument("-g", action="store_true",
-			help="generate themes")
+		help="generate themes")
 
 	lock_arg.add_argument("-i", metavar="\"path/to/dir\"",
 		help="The input file or directory")
+
+	lock_arg.add_argument('--override', action="store_true",
+		help="Override exisiting lockscreen")
 
 	clear_arg.add_argument("--all", action="store_true",
 		help="Clear all data relating to KADAI (themes, lockscreens, etc)")
@@ -84,7 +89,7 @@ def parse_args(parser):
 	if args.subcommand == "theme":
 		if args.i:
 			if args.g:
-				ThemeGenerator(args.i, VERBOSE_MODE).generate()
+				ThemeGenerator(args.i, VERBOSE_MODE).generate(args.override)
 				sys.exit(0)
 			else:
 				ThemeGenerator(args.i, VERBOSE_MODE).update(args.l)

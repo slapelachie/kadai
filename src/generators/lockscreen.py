@@ -51,7 +51,7 @@ class LockscreenGenerate:
 		self.screen_md5 = utils.md5(subprocess.check_output(["xrandr"]))[:20]
 		
 
-	def generate(self):
+	def generate(self, override=False):
 		"""Generate the lockscreen image"""
 		logger.info("Generating lockscreens...")
 		# Apply this function to every image in the passed list
@@ -67,52 +67,54 @@ class LockscreenGenerate:
 			# Set the path for the final image
 			img_path = os.path.join(DATA_LOCKSCREEN_PATH, img_md5 + "_" + self.screen_md5 + ".png")
 
-			# Execute and get the output from xrandr
-			cmd = ['xrandr']
-			p = subprocess.check_output(cmd)
- 
-			# Get all resolutions
-			resolutions = re.findall(display_re,str(p))
+			if not os.path.isfile(img_path) or override:
 
-			# Repeat for every screen the user has
-			for resolution in resolutions:
-				width, height, screen_x, screen_y = map(int, resolution)
-				# Set a name for the temp image being created for the current resolution
-				tmp_img = os.path.join(DATA_LOCKSCREEN_PATH, "tmp_"+ str(width)+"x"+str(height)+"_"+img_md5)
-				# Add to the 'to be deleted later' list
-				tmp_imgs.append(tmp_img)
+				# Execute and get the output from xrandr
+				cmd = ['xrandr']
+				p = subprocess.check_output(cmd)
+	
+				# Get all resolutions
+				resolutions = re.findall(display_re,str(p))
 
-				# Check if the temp file already exists
-				if not os.path.isfile(tmp_img):
-					# Change the size of the image passed from the class
-					subprocess.run(["convert", image, '-resize', str(width) + "X" + str(height)+"^", '-gravity', 'Center', '-crop', str(width) + "X" + str(height) + "+0+0", '+repage', tmp_img])
+				# Repeat for every screen the user has
+				for resolution in resolutions:
+					width, height, screen_x, screen_y = map(int, resolution)
+					# Set a name for the temp image being created for the current resolution
+					tmp_img = os.path.join(DATA_LOCKSCREEN_PATH, "tmp_"+ str(width)+"x"+str(height)+"_"+img_md5)
+					# Add to the 'to be deleted later' list
+					tmp_imgs.append(tmp_img)
+
+					# Check if the temp file already exists
+					if not os.path.isfile(tmp_img):
+						# Change the size of the image passed from the class
+						subprocess.run(["convert", image, '-resize', str(width) + "X" + str(height)+"^", '-gravity', 'Center', '-crop', str(width) + "X" + str(height) + "+0+0", '+repage', tmp_img])
+					
+					if output_img_width < width+screen_x:
+						output_img_width = width+screen_x
+					
+					if output_img_height < height+screen_y:
+						output_img_height = height+screen_y
+
+					# Params for this image when converted later on
+					params = params + " " + tmp_img + " -geometry +" + str(screen_x) + "+" + str(screen_y) + " -composite -fill black -colorize 50% -blur 0x4"
 				
-				if output_img_width < width+screen_x:
-					output_img_width = width+screen_x
-				
-				if output_img_height < height+screen_y:
-					output_img_height = height+screen_y
+				tqdm_logger.log(15, "["+ str(i+1) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
 
-				# Params for this image when converted later on
-				params = params + " " + tmp_img + " -geometry +" + str(screen_x) + "+" + str(screen_y) + " -composite -fill black -colorize 50% -blur 0x4"
-			
-			tqdm_logger.log(15, "["+ str(i+1) + "/" + str(len(self.image)) + "] Generating lockscreen for: " + image + "...")
+				# Create the background for the final image
+				subprocess.run(["convert", "-size", str(output_img_width)+"x"+str(output_img_height), "xc:rgb(1,0,0)", img_path])
 
-			# Create the background for the final image
-			subprocess.run(["convert", "-size", str(output_img_width)+"x"+str(output_img_height), "xc:rgb(1,0,0)", img_path])
+				# Flatten the arguments to be a one level list item
+				args = [["convert", img_path], params.split(" "), [img_path]]
+				args = [y for x in args for y in x]
+				while "" in args:
+					args.remove("")
 
-			# Flatten the arguments to be a one level list item
-			args = [["convert", img_path], params.split(" "), [img_path]]
-			args = [y for x in args for y in x]
-			while "" in args:
-				args.remove("")
+				# Create the final image
+				subprocess.run(args)
 
-			# Create the final image
-			subprocess.run(args)
-
-			# Remove the temp files
-			for file in tmp_imgs:
-				os.remove(file)
+				# Remove the temp files
+				for file in tmp_imgs:
+					os.remove(file)
 
 	def update(self):
 		""" Update the wallpaper based on the parsed image in the parent class """
