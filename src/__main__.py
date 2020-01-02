@@ -63,6 +63,8 @@ def get_args():
 	clear_arg.add_argument("--all", action="store_true",
 		help="Clear all data relating to KADAI (themes, lockscreens, etc)")
 
+	clear_arg.add_argument("--type", metavar="theme type",
+		help="Clear all data relating to KADAI as a certain type")
 
 	return arg
 
@@ -125,6 +127,25 @@ def parse_args(parser):
 				logger.info("Cleared KADAI cache folders")
 			else:
 				logger.warning("Canceled clearing cache folders...")
+
+		elif args.type:
+			if args.type.lower() == "theme":
+				CLEAR_DIR = DATA_DESKTOP_PATH
+			elif args.type == "lockscreen":
+				CLEAR_DIR = DATA_LOCKSCREEN_PATH
+			else:
+				logger.critical("%s is not a valid type! Exiting...", args.type)
+				sys.exit(1)
+
+			clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
+			if(clear == "y"):
+				try:
+					shutil.rmtree(CLEAR_DIR)
+				except:
+					raise
+				logger.info("Cleared KADAI cache folder")
+			else:
+				logger.warning("Canceled clearing cache folder...")
 
 
 def main():
