@@ -51,9 +51,14 @@ def get_dir_imgs(img_dir):
 	return [img.name for img in os.scandir(img_dir)
 			if img.name.lower().endswith(file_types)]
 
-# ##_type_name
 def run_post_scripts(type, args=None):
 	POST_SCRIPTS_DIR = os.path.join(DATA_PATH, 'postscripts')
+
+	try:
+		os.makedirs(POST_SCRIPTS_DIR, exist_ok=True)
+	except:
+		raise
+
 	scripts = [f for f in os.listdir(POST_SCRIPTS_DIR) 
 		if re.match(r'^([0-9]{2}-' + type + r'-\w+)', f) 
 			and os.access(os.path.join(POST_SCRIPTS_DIR, f), os.X_OK)]

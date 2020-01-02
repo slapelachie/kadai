@@ -9,16 +9,16 @@ The main philosophy behind KADAI is to not edit any predefined configuration fil
 ## How to use
 If you ever get stuck on the syntax of this command, execute: `kadai -h` or `kadai [subcommand] -h` for the list of avaliable arguments.
 
-This script is split into two sections, the wallpaper and the lockscreen sections
+This script is split into two sections, the theme and the lockscreen sections
 
-### wallpaper
-This command is executed using `kadai wallpaper ...` and is used to manage the wallpaper and theme.
+### theme
+This command is executed using `kadai theme ...` and is used to manage the wallpaper and theme.
 
 The arguments are the following:
 
 | Argument  | Usage |
 |-----------|-----------------------------------------------------|
-| -h, --help| Shows the help message for the wallpaper subcommand |
+| -h, --help| Shows the help message for the theme subcommand |
 | -g        | Switch for generating themes |
 | -i        | The input file |
 | -l        | Apply the same image as the lockscreen |
@@ -41,6 +41,6 @@ The arguments are the following:
 Will get to this one day
 
 ### Process
-Place template files under `~/.config/kadai/templates/`
+Place template files under `~/.local/share/kadai/templates/`
 
 Under the directory where this file is located, run the `create_binary.sh` to create the binary. Place this binary under a path directory.
