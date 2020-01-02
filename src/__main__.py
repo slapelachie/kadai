@@ -4,9 +4,6 @@
 # Author: Slapaay
 # Wallpaper and lockscreen theme manager
 
-#TODO: Create a makescript
-#TODO: Template files need to go somewhere
-
 import argparse
 import sys
 import os.path

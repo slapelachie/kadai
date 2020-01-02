@@ -1,0 +1,4 @@
+#!/bin/bash
+# This is an example file for what a post script might look like
+
+i3-msg restart

@@ -93,8 +93,16 @@ class ThemeGenerator:
 	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """
 		logger.info('Generating themes...')
+
+		# Get all templates in the templates folder
+		logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
+		templates = glob.glob(os.path.join(DATA_PATH, "templates/*"))
+
+		if len(templates) == 0:
+			logger.warn("No template files found under %s, this will lead to theme files being blank!",
+				os.path.join(DATA_PATH, "templates"))
+
 		# Recursively go through every image
-		
 		logger.debug("Starting recursive file generation...")
 		for i in tqdm.tqdm(range(len(self.image))):
 		#for i in range(len(self.image)):
@@ -115,13 +123,10 @@ class ThemeGenerator:
 
 				tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
 
-				# Get all templates in the templates folder
-				tqdm_logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
-				templates = glob.glob(os.path.join(DATA_PATH, "templates/*"))
 				tqdm_logger.debug("Clearing the theme file...")
 				open(os.path.expanduser(theme_path), 'w').close()
 
-				# Applies values to the templates and concats into single theme file
+				# Applies values to the templates and concats into single theme file	
 				for template in templates:
 					tqdm_logger.debug("Adding %s template to theme file", template)
 					with open(template) as file:
