@@ -4,12 +4,16 @@
 # Author: Slapaay
 # Wallpaper and lockscreen theme manager
 
+#TODO: Create a makescript
+#TODO: Allow the user to clear or override themes / lockscreens
+#TODO: Template files need to go somewhere
+
 import argparse
 import sys
 import os.path
 import logging
 
-from utils.settings import CACHE_DESKTOP_PATH, CACHE_LOCKSCREEN_PATH, CACHE_PATH, CONFIG_PATH
+from utils.settings import DATA_DESKTOP_PATH, DATA_LOCKSCREEN_PATH, DATA_PATH, CONFIG_PATH
 from utils import utils,log
 from generators.theme import ThemeGenerator
 from generators.lockscreen import LockscreenGenerate
@@ -82,8 +86,8 @@ def parse_args(parser):
 				sys.exit(0)
 		elif args.p:
 			# Check if the last file exists, if it does update to that
-			if(os.path.isfile(os.path.join(CACHE_DESKTOP_PATH, "last"))):
-				with open(os.path.join(CACHE_DESKTOP_PATH, "last"), "r") as file:
+			if(os.path.isfile(os.path.join(DATA_DESKTOP_PATH, "last"))):
+				with open(os.path.join(DATA_DESKTOP_PATH, "last"), "r") as file:
 					filedata = str(file.read()).rstrip()
 					ThemeGenerator(filedata, VERBOSE_MODE).update(args.l)
 			else:
@@ -102,9 +106,9 @@ def parse_args(parser):
 
 def main():
 	# Create required directories
-	os.makedirs(CACHE_PATH, exist_ok=True)
-	os.makedirs(CACHE_DESKTOP_PATH, exist_ok=True)
-	os.makedirs(CACHE_LOCKSCREEN_PATH, exist_ok=True)
+	os.makedirs(DATA_PATH, exist_ok=True)
+	os.makedirs(DATA_DESKTOP_PATH, exist_ok=True)
+	os.makedirs(DATA_LOCKSCREEN_PATH, exist_ok=True)
 	os.makedirs(CONFIG_PATH, exist_ok=True)
 
 	parser = get_args()

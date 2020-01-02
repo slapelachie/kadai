@@ -43,4 +43,4 @@ Will get to this one day
 ### Process
 Place template files under `~/.config/kadai/templates/`
 
-Under this directory, run the `create_binary.sh` to create the binary. Place this binary under a path directory.
+Under the directory where this file is located, run the `create_binary.sh` to create the binary. Place this binary under a path directory.

@@ -9,7 +9,7 @@ import tqdm
 
 from utils import colorgen
 from utils import utils, log
-from utils.settings import CACHE_DESKTOP_PATH, CONFIG_PATH, DEBUG_MODE
+from utils.settings import DATA_DESKTOP_PATH, DATA_PATH, DEBUG_MODE
 from generators.lockscreen import LockscreenGenerate
 
 logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
@@ -31,6 +31,7 @@ class ThemeGenerator:
 		elif verbose:
 			logger.setLevel(15)
 			tqdm_logger.setLevel(15)
+
 		# If the path is a file, get the image and set itself to that
 		if os.path.isfile(image):
 			logger.debug('Passed source is a file')
@@ -63,7 +64,7 @@ class ThemeGenerator:
 		md5_hash = utils.md5(image)[:20]
 		logger.debug("Hash for %s is %s", image, md5_hash)
 		# Set the path for the theme
-		theme_path = os.path.join(CACHE_DESKTOP_PATH, md5_hash)
+		theme_path = os.path.join(DATA_DESKTOP_PATH, md5_hash)
 		logger.debug("Set output for theme to %s", theme_path)
 
 		# If the theme doesn't exist, generate it
@@ -77,7 +78,7 @@ class ThemeGenerator:
 			LockscreenGenerate(image, self.verbose).update()
 
 		# Update a file with the directory to the last image used
-		with open(os.path.join(CACHE_DESKTOP_PATH, "last"), "w+") as file:
+		with open(os.path.join(DATA_DESKTOP_PATH, "last"), "w+") as file:
 			logger.debug("Updating last image to %s", image)
 			file.write(image)	
 
@@ -85,12 +86,9 @@ class ThemeGenerator:
 		logger.debug("Running subprocesses...")
 		subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
 		subprocess.run(["feh", "--bg-fill", image])
-		subprocess.run(["i3-msg","restart"])
-		# Optional progarams
-		# subprocess.run(["killall", "-USR1", "st"])
-		subprocess.run(["spicetify","update"])
-		subprocess.run(["convert", image, "-fill", "black", "-colorize", "70%", "-blur", "0x4",
-			os.path.expanduser("~/.config/startpage/images/background")])
+
+		# Run external scripts
+		utils.run_post_scripts('theme', image)
 
 	def generate(self):
 		""" Generates the theme passed on the parent class """
@@ -105,7 +103,7 @@ class ThemeGenerator:
 			image = utils.get_image(image)
 			md5_hash = utils.md5(image)[:20]
 			tqdm_logger.debug("Using hash %s for image file %s", md5_hash, image)
-			theme_path = os.path.join(CACHE_DESKTOP_PATH, md5_hash)
+			theme_path = os.path.join(DATA_DESKTOP_PATH, md5_hash)
 			tqdm_logger.debug("Setting the output for %s to %s", image, theme_path)
 
 			# If the theme file does not already exist, generate it
@@ -118,8 +116,8 @@ class ThemeGenerator:
 				tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
 
 				# Get all templates in the templates folder
-				tqdm_logger.debug("Searching recursively for templates under %s", os.path.join(CONFIG_PATH, "templates"))
-				templates = glob.glob(os.path.join(CONFIG_PATH, "templates/*"))
+				tqdm_logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
+				templates = glob.glob(os.path.join(DATA_PATH, "templates/*"))
 				tqdm_logger.debug("Clearing the theme file...")
 				open(os.path.expanduser(theme_path), 'w').close()
 
