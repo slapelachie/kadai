@@ -122,7 +122,7 @@ class ThemeGenerator:
 		
 		if len(non_gen_imgs) > 0:
 			logger.info('Generating themes...')
-			for i in tqdm.tqdm(range(len(self.image))):
+			for i in tqdm.tqdm(range(len(non_gen_imgs))):
 				image = non_gen_imgs[i][0]
 				theme_path = non_gen_imgs[i][1]
 			
