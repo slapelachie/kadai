@@ -82,6 +82,13 @@ class ThemeGenerator:
 			logger.debug("Updating last image to %s", image)
 			file.write(image)	
 
+		symlink_path = os.path.join(DATA_DESKTOP_PATH, 'current_theme')
+
+		if os.path.isfile(symlink_path):
+			os.remove(symlink_path)
+
+		os.symlink(theme_path, symlink_path)
+
 		# Other programs that need to be updated for the change to occur
 		logger.debug("Running subprocesses...")
 		subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
@@ -92,7 +99,7 @@ class ThemeGenerator:
 
 	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """
-		logger.info('Generating themes...')
+		non_gen_imgs = []
 
 		# Get all templates in the templates folder
 		logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
@@ -104,18 +111,22 @@ class ThemeGenerator:
 
 		# Recursively go through every image
 		logger.debug("Starting recursive file generation...")
-		for i in tqdm.tqdm(range(len(self.image))):
-		#for i in range(len(self.image)):
+		for i in range(len(self.image)):
 			image = self.image[i]
-			tqdm_logger.debug("Using image %s, %s", image, tqdm_logger.handlers)
 			image = utils.get_image(image)
 			md5_hash = utils.md5(image)[:20]
-			tqdm_logger.debug("Using hash %s for image file %s", md5_hash, image)
 			theme_path = os.path.join(DATA_DESKTOP_PATH, md5_hash)
-			tqdm_logger.debug("Setting the output for %s to %s", image, theme_path)
 
-			# If the theme file does not already exist, generate it
 			if not os.path.isfile(theme_path) or override:
+				non_gen_imgs.append([image, theme_path])
+		
+		if len(non_gen_imgs) > 0:
+			logger.info('Generating themes...')
+			for i in tqdm.tqdm(range(len(self.image))):
+				image = non_gen_imgs[i][0]
+				theme_path = non_gen_imgs[i][1]
+			
+				# If the theme file does not already exist, generate it
 				tqdm_logger.debug("Generating theme file %s", theme_path)
 				# Generate the pallete
 				tqdm_logger.debug("Getting color pallete...")
@@ -144,3 +155,5 @@ class ThemeGenerator:
 						tqdm_logger.debug("Writing updated template file from %s to theme file %s", template, theme_path)
 						with open(os.path.expanduser(theme_path), 'a') as file:
 							file.write("\n"+ filedata + "\n")	
+		else:
+			logger.info("No themes to generate.")

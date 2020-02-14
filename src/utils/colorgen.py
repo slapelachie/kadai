@@ -59,6 +59,25 @@ def hsv_to_rgb(color):
 
 	return [int(col) for col in colorsys.hsv_to_rgb(*color)]
 
+def rgb_to_hls(color):
+	"""
+	Converts from rgb to hsv
+
+	Arguments:
+		color (list) -- list of red, green, and blue for a color [r, g, b]
+	"""
+	return colorsys.rgb_to_hls(*color)
+
+def hls_to_rgb(color):
+	"""
+	Converts from hsv to rgb
+
+	Arguments:
+		color (list) -- list of hue, saturation, and value for a color [h, s, v]
+	"""
+
+	return [int(col) for col in colorsys.rgb_to_hls(*color)]
+
 def hex_to_rgb(color):
 	"""
 	Convert a hex color to rgb.
@@ -118,16 +137,16 @@ def get_color_distance(cols):
 		cols (list) -- list of hexidecimal formatted colors
 	"""
 
-	hsv_distance=[]
+	hls_distance=[]
 
 	# Calculate the vibrance of the image
 	for i in range(len(cols)):
-		hsv_color = [*rgb_to_hsv(hex_to_rgb(cols[i]))]
-		vibrance = (hsv_color[1])
+		hls_color = [*rgb_to_hls(hex_to_rgb(cols[i]))]
+		vibrance = (hls_color[2])
 
-		hsv_distance.append([cols[i], math.sqrt(pow(0 -vibrance, 2))])
+		hls_distance.append([cols[i], vibrance])
 
-	return hsv_distance
+	return hls_distance
 
 def palette_varience(cols):
 	"""
@@ -142,7 +161,7 @@ def palette_varience(cols):
 
 	distance = get_color_distance(cols)
 	# Sort the colors based on their distance
-	sorted_cols = sorted(distance, key = lambda x: x[1])
+	sorted_cols = sorted(distance, key = lambda x: abs(x[1]-1))
 
 	for i in range (len(sorted_cols)):
 		sorted_cols[i]=sorted_cols[i][0]

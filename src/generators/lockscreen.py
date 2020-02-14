@@ -53,14 +53,10 @@ class LockscreenGenerate:
 
 	def generate(self, override=False):
 		"""Generate the lockscreen image"""
-		logger.info("Generating lockscreens...")
 		# Apply this function to every image in the passed list
-		for i in tqdm.tqdm(range(len(self.image))):
-			image = self.image[i]
-			tmp_imgs = []
-			params = ""
-			output_img_height=0
-			output_img_width=0
+		non_gen_imgs = []
+		for i in range(len(self.image)):
+			image = self.image[i]	
 
 			# Get the images md5 hash
 			img_md5 = utils.md5_file(image)[:20]
@@ -68,11 +64,23 @@ class LockscreenGenerate:
 			img_path = os.path.join(DATA_LOCKSCREEN_PATH, img_md5 + "_" + self.screen_md5 + ".png")
 
 			if not os.path.isfile(img_path) or override:
+				non_gen_imgs.append([image, img_path])				
+
+		if len(non_gen_imgs) > 0:
+			logger.info("Generating lockscreens...")
+			for i in tqdm.tqdm(range(len(non_gen_imgs))):
+				image = non_gen_imgs[i][0]
+				img_path = non_gen_imgs[i][1]
+
+				tmp_imgs = []
+				params = ""
+				output_img_height=0
+				output_img_width=0
 
 				# Execute and get the output from xrandr
 				cmd = ['xrandr']
 				p = subprocess.check_output(cmd)
-	
+
 				# Get all resolutions
 				resolutions = re.findall(display_re,str(p))
 
@@ -115,6 +123,8 @@ class LockscreenGenerate:
 				# Remove the temp files
 				for file in tmp_imgs:
 					os.remove(file)
+		else:
+			logger.info("No lockscreens to generate.")
 
 	def update(self):
 		""" Update the wallpaper based on the parsed image in the parent class """
@@ -131,7 +141,12 @@ class LockscreenGenerate:
 
 		# Copy the image if it exists
 		if os.path.isfile(img_path):
-			shutil.copyfile(img_path, os.path.join(DATA_LOCKSCREEN_PATH, "lockscreen"))	
+			symlink_path = os.path.join(DATA_LOCKSCREEN_PATH, 'lockscreen')
+
+			if os.path.isfile(symlink_path):
+				os.remove(symlink_path)
+
+			os.symlink(img_path, symlink_path)
 		else:
 			self.generate()
 			self.update()
