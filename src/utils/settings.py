@@ -11,7 +11,7 @@ else:
 	CONFIG_PATH = os.path.expanduser('~/.config/kadai')
 
 if "XDG_CACHE_HOME" in os.environ:
-	CACHE_PATH = os.path.join(os.getenv("XDG_CACHE_HOME", 'kadai'))
+	CACHE_PATH = os.path.join(os.getenv("XDG_CACHE_HOME"), 'kadai')
 else:
 	CACHE_PATH = os.path.expanduser('~/.cache/kadai')
 
