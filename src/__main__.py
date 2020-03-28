@@ -10,10 +10,9 @@ import os.path
 import logging
 import shutil
 
-from utils.settings import DATA_DESKTOP_PATH, DATA_LOCKSCREEN_PATH, DATA_PATH, CONFIG_PATH, CACHE_PATH
+from utils.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from utils import utils,log
-from generators.theme import ThemeGenerator
-from generators.lockscreen import LockscreenGenerate
+from generate.generate import ThemeGenerator
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -21,7 +20,6 @@ def get_args():
 	""" Get the args parsed from the command line and does arg handling stuff """
 
 	arg = argparse.ArgumentParser(description="Generate and switch wallpaper themes")
-	subparser = arg.add_subparsers(help='sub-command help', dest="subcommand")
 
 	arg.add_argument('-v', action='store_true',
 		help='Verbose Logging')
@@ -29,39 +27,25 @@ def get_args():
 	arg.add_argument('-q', action='store_true',
 		help='Allow only error logging')
 		
-	wall_arg = subparser.add_parser('theme', help="Theme related commands") 
-	lock_arg = subparser.add_parser('lockscreen', help="Lockscreen related commands") 	
-	clear_arg = subparser.add_parser('clear', help="Used for clearing KADAI data")
+	#clear_arg = subparser.add_parser('clear', help="Used for clearing KADAI data")
 
-	wall_arg.add_argument("-g", action="store_true",
+	arg.add_argument("-g", action="store_true",
 		help="generate themes")
 	
-	wall_arg.add_argument("-i", metavar="\"path/to/dir\"",
+	arg.add_argument("-i", metavar="\"path/to/dir\"",
 		help="the input file")
 
-	wall_arg.add_argument("-l", action="store_true",
+	arg.add_argument("-l", action="store_true",
 		help="generate and apply lockscreen")
 	
-	wall_arg.add_argument("-p", action="store_true",
+	arg.add_argument("-p", action="store_true",
 		help="Use last set theme")
 
-	wall_arg.add_argument('--override', action="store_true",
+	arg.add_argument('--override', action="store_true",
 		help="Override exisiting themes")
 	
-	lock_arg.add_argument("-g", action="store_true",
-		help="generate themes")
-
-	lock_arg.add_argument("-i", metavar="\"path/to/dir\"",
-		help="The input file or directory")
-
-	lock_arg.add_argument('--override', action="store_true",
-		help="Override exisiting lockscreen")
-
-	clear_arg.add_argument("--all", action="store_true",
-		help="Clear all data relating to KADAI (themes, lockscreens, etc)")
-
-	clear_arg.add_argument("--type", metavar="theme type",
-		help="Clear all data relating to KADAI as a certain type")
+	arg.add_argument("--clear", action="store_true",
+		help="Clear all data relating to KADAI")
 
 	return arg
 
@@ -85,72 +69,43 @@ def parse_args(parser):
 		pass
 
 	# If the subcommand 'theme' is called
-	if args.subcommand == "theme":
-		if args.i:
-			if args.g:
-				ThemeGenerator(args.i, VERBOSE_MODE).generate(args.override)
-				sys.exit(0)
-			else:
-				ThemeGenerator(args.i, VERBOSE_MODE).update(args.l)
-				sys.exit(0)
-		elif args.p:
-			# Check if the last file exists, if it does update to that
-			if(os.path.isfile(os.path.join(DATA_DESKTOP_PATH, "last"))):
-				with open(os.path.join(DATA_DESKTOP_PATH, "last"), "r") as file:
-					filedata = str(file.read()).rstrip()
-					ThemeGenerator(filedata, VERBOSE_MODE).update(args.l)
-			else:
-				logger.critical("Last file does not exist!")
-				sys.exit(1)
+	if args.i:
+		if args.g:
+			ThemeGenerator(args.i, VERBOSE_MODE).generate(args.override)
+			sys.exit(0)
 		else:
-			logger.critical("No file specified...")
+			ThemeGenerator(args.i, VERBOSE_MODE).update()
+			sys.exit(0)
+	elif args.p:
+		# Check if the last file exists, if it does update to that
+		if(os.path.isfile(os.path.join(CACHE_PATH, "last"))):
+			with open(os.path.join(CACHE_PATH, "last"), "r") as file:
+				filedata = str(file.read()).rstrip()
+				ThemeGenerator(filedata, VERBOSE_MODE).update()
+		else:
+			logger.critical("Last file does not exist!")
 			sys.exit(1)
-	# If the subcommand 'lockscreen' is called
-	elif args.subcommand == "lockscreen":
-		if args.i:
-			if args.g:
-				LockscreenGenerate(args.i, VERBOSE_MODE).generate()
-			else:
-				LockscreenGenerate(args.i, VERBOSE_MODE).update()	
-	
-	elif args.subcommand == "clear":
-		if args.all:
-			clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
-			if(clear == "y"):
-				try:
-					shutil.rmtree(CACHE_PATH)
-				except:
-					raise
-				logger.info("Cleared KADAI cache folders")
-			else:
-				logger.warning("Canceled clearing cache folders...")
+	elif args.clear:
+		clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
+		if(clear == "y"):
+			try:
+				shutil.rmtree(CACHE_PATH)
+			except:
+				raise
+			logger.info("Cleared KADAI cache folders")
+		else:
+			logger.warning("Canceled clearing cache folders...")
+	else:
+		logger.critical("No file specified...")
+		sys.exit(1)
 
-		elif args.type:
-			if args.type.lower() == "theme":
-				CLEAR_DIR = DATA_DESKTOP_PATH
-			elif args.type == "lockscreen":
-				CLEAR_DIR = DATA_LOCKSCREEN_PATH
-			else:
-				logger.critical("%s is not a valid type! Exiting...", args.type)
-				sys.exit(1)
 
-			clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
-			if(clear == "y"):
-				try:
-					shutil.rmtree(CLEAR_DIR)
-				except:
-					raise
-				logger.info("Cleared KADAI cache folder")
-			else:
-				logger.warning("Canceled clearing cache folder...")
 
 
 def main():
 	# Create required directories
 	try:
 		os.makedirs(DATA_PATH, exist_ok=True)
-		os.makedirs(DATA_DESKTOP_PATH, exist_ok=True)
-		os.makedirs(DATA_LOCKSCREEN_PATH, exist_ok=True)
 		os.makedirs(CONFIG_PATH, exist_ok=True)
 	except:
 		raise

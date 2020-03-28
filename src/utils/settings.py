@@ -15,7 +15,4 @@ if "XDG_CACHE_HOME" in os.environ:
 else:
 	CACHE_PATH = os.path.expanduser('~/.cache/kadai')
 
-DATA_DESKTOP_PATH = os.path.join(CACHE_PATH, 'theme')
-DATA_LOCKSCREEN_PATH = os.path.join(CACHE_PATH, 'lockscreen')
-
 DEBUG_MODE = False

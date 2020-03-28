@@ -9,11 +9,15 @@ import tqdm
 
 from utils import colorgen
 from utils import utils, log
-from utils.settings import DATA_DESKTOP_PATH, DATA_PATH, DEBUG_MODE
-from generators.lockscreen import LockscreenGenerate
+from utils.settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
 
 logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
 tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
+
+theme_dir = os.path.join(CACHE_PATH, "themes")
+try:
+	os.makedirs(theme_dir, exist_ok=True)
+except: raise
 
 class ThemeGenerator:
 	"""
@@ -44,7 +48,7 @@ class ThemeGenerator:
 			logger.critical("File does not exist! Exiting...")
 			sys.exit(1)
 
-	def update(self, lockscreen=False):
+	def update(self):
 		"""
 		Updates the theme to the parsed image
 
@@ -64,7 +68,7 @@ class ThemeGenerator:
 		md5_hash = utils.md5(image)[:20]
 		logger.debug("Hash for %s is %s", image, md5_hash)
 		# Set the path for the theme
-		theme_path = os.path.join(DATA_DESKTOP_PATH, md5_hash)
+		theme_path = os.path.join(theme_dir, md5_hash)
 		logger.debug("Set output for theme to %s", theme_path)
 
 		# If the theme doesn't exist, generate it
@@ -72,17 +76,12 @@ class ThemeGenerator:
 			logger.debug("Theme does not exist, generating...")
 			self.generate()
 			
-		# If this is true, updates the lockscreen to the same image
-		if lockscreen:
-			logger.debug("Lockscreen argument has been passed, generating lockscreen...")
-			LockscreenGenerate(image, self.verbose).update()
-
 		# Update a file with the directory to the last image used
-		with open(os.path.join(DATA_DESKTOP_PATH, "last"), "w+") as file:
+		with open(os.path.join(CACHE_PATH, "last"), "w+") as file:
 			logger.debug("Updating last image to %s", image)
 			file.write(image)	
 
-		symlink_path = os.path.join(DATA_DESKTOP_PATH, 'current_theme')
+		symlink_path = os.path.join(theme_dir, 'current_theme')
 
 		if os.path.isfile(symlink_path):
 			os.remove(symlink_path)
@@ -115,7 +114,7 @@ class ThemeGenerator:
 			image = self.image[i]
 			image = utils.get_image(image)
 			md5_hash = utils.md5(image)[:20]
-			theme_path = os.path.join(DATA_DESKTOP_PATH, md5_hash)
+			theme_path = os.path.join(theme_dir, md5_hash)
 
 			if not os.path.isfile(theme_path) or override:
 				non_gen_imgs.append([image, theme_path])
