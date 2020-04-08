@@ -33,16 +33,15 @@ The arguments are the following:
  - [Pillow](https://pypi.org/project/Pillow/)
  - [colorthief](https://pypi.org/project/colorthief/)
 
-#### Additional Programs
- - [xrandr](https://www.archlinux.org/packages/extra/x86_64/xorg-xrandr/)
- - [feh](https://www.archlinux.org/packages/extra/x86_64/feh/)
- - [ImageMagick](https://www.archlinux.org/packages/extra/x86_64/imagemagick/)
-
 ### Process
 To install, go to the root directory of this project (where this README is) and run `make && make install && make clean`
 
+This method assumes that the `~/.local/bin/` is included in the `$PATH` variable.
+
 ## Postscripts
 Post scripts are executables that are run after one of the sub commands are completed.
+The scripts take in an argument which contains the path to the image, this can be accessed through `${1}` in the script.
+
 To create a postscript, do the following:
 1. Create a file with the following naming convention: `##-name`.
 
@@ -50,7 +49,7 @@ To create a postscript, do the following:
  	 - Where `name` is the name of it
 
 2. Add this file under ~/.local/share/kadai/postscripts
-3. Make it executable (under linux `chmod +x filename` works)
+3. Make it executable (e.g. `chmod +x filename`)
 
 For examples of postscripts look under `examples/postscripts`
 

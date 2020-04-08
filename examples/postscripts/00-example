@@ -1,4 +1,8 @@
 #!/bin/bash
 # This is an example file for what a post script might look like
 
+# Set the image (${1}) as the background
+feh --bg-fill ${1}
+
+# Restart the window manager
 i3-msg restart
