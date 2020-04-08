@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # KADAI
-# Author: Slapaay
+# Author: slapelachie
 # Wallpaper and lockscreen theme manager
 
 import argparse
@@ -10,9 +10,9 @@ import os.path
 import logging
 import shutil
 
-from utils.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
-from utils import utils,log
-from generate.generate import ThemeGenerator
+from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
+from . import utils,log
+from .generate import ThemeGenerator
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 

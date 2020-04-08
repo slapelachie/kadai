@@ -7,9 +7,9 @@ import random
 import logging
 import tqdm
 
-from utils import colorgen
-from utils import utils, log
-from utils.settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
+from . import colorgen
+from . import utils, log
+from .settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
 
 logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
 tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
@@ -93,7 +93,7 @@ class ThemeGenerator:
 		subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
 
 		# Run external scripts
-		utils.run_post_scripts('theme', image)
+		utils.run_post_scripts(image)
 
 	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """

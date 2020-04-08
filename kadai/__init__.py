@@ -1,11 +1,13 @@
 from . import colorgen
+from . import generate
+from . import log
 from . import settings
 from . import utils
-from . import log
 
-__all__ = [
+ALL = [
 	"colorgen",
+	"generate",
+	"log",
 	"settings",
-	"utils",
-	"log"
+	"utils"
 ]

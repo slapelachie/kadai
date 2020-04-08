@@ -33,8 +33,13 @@ The arguments are the following:
  - [Pillow](https://pypi.org/project/Pillow/)
  - [colorthief](https://pypi.org/project/colorthief/)
 
-### Process
-To install, go to the root directory of this project (where this README is) and run `make && make install && make clean`
+### Installation
+
+#### System Wide Install
+To install system wide, run `$ pip install kadai` or if from source `$ pip install .`
+
+#### User Install
+To install for just the user, run `$ pip install --user kadai` or if from source `$ pip install --user .`
 
 This method assumes that the `~/.local/bin/` is included in the `$PATH` variable.
 

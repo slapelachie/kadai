@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # colorgen
-# Author: slapaay
+# Author: slapelachie
 # Note: Most of this code is from pywal, but is modified to get a greater range of colors from 
 # the top 16 colors of the wallpaper
 #
@@ -13,7 +13,8 @@ import sys, getopt
 import math
 from PIL import Image
 from colorthief import ColorThief
-from utils import log
+
+from . import log
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 

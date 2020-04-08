@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-from utils.settings import DATA_PATH
+from .settings import DATA_PATH
 
 def md5(string):
 	"""
@@ -51,7 +51,7 @@ def get_dir_imgs(img_dir):
 	return [img.name for img in os.scandir(img_dir)
 			if img.name.lower().endswith(file_types)]
 
-def run_post_scripts(type, args=None):
+def run_post_scripts(args=None):
 	POST_SCRIPTS_DIR = os.path.join(DATA_PATH, 'postscripts')
 
 	try:
