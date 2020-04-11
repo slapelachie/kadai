@@ -36,3 +36,7 @@
 *.color14: [color14]
 *color15: [color15]
 *.color15: [color15]
+
+rofi.color-window:	[color0], [color0]
+rofi.color-normal:	[color0], [color15], [color0], [color0], [color1]
+rofi.color-urgent:	[color0], [color1], [color0], [color0], [color1]

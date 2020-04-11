@@ -99,9 +99,6 @@ def parse_args(parser):
 		logger.critical("No file specified...")
 		sys.exit(1)
 
-
-
-
 def main():
 	# Create required directories
 	try:

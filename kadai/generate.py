@@ -6,6 +6,7 @@ import hashlib
 import random
 import logging
 import tqdm
+import re
 
 from . import colorgen
 from . import utils, log
@@ -67,33 +68,32 @@ class ThemeGenerator:
 		# Get the md5 hash of the image
 		md5_hash = utils.md5(image)[:20]
 		logger.debug("Hash for %s is %s", image, md5_hash)
-		# Set the path for the theme
-		theme_path = os.path.join(theme_dir, md5_hash)
-		logger.debug("Set output for theme to %s", theme_path)
+	
+		theme_files = [f for f in os.listdir(os.path.join(theme_dir))
+			if re.match(r'^' + md5_hash + r'-', f)]
 
 		# If the theme doesn't exist, generate it
-		if not os.path.isfile(theme_path):
+		if len(theme_files) == 0:
 			logger.debug("Theme does not exist, generating...")
 			self.generate()
-			
-		# Update a file with the directory to the last image used
-		with open(os.path.join(CACHE_PATH, "last"), "w+") as file:
-			logger.debug("Updating last image to %s", image)
-			file.write(image)	
+			self.update()
+			return
 
-		symlink_path = os.path.join(theme_dir, 'current_theme')
+		for theme in theme_files:
+			theme_type = theme[21:]
+			symlink_path = os.path.join(CACHE_PATH, theme_type)
 
-		if os.path.isfile(symlink_path):
-			os.remove(symlink_path)
+			if os.path.isfile(symlink_path):
+				os.remove(symlink_path)
 
-		os.symlink(theme_path, symlink_path)
+			os.symlink(os.path.join(theme_dir, theme), symlink_path)
 
 		# Other programs that need to be updated for the change to occur
-		logger.debug("Merging Xresources...")
-		subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
+		#logger.debug("Merging Xresources...")
+		#subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
 
 		# Run external scripts
-		utils.run_post_scripts(image)
+		utils.run_post_scripts([image])
 
 	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """
@@ -101,7 +101,8 @@ class ThemeGenerator:
 
 		# Get all templates in the templates folder
 		logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
-		templates = glob.glob(os.path.join(DATA_PATH, "templates/*"))
+		templates = [f for f in os.listdir(os.path.join(DATA_PATH, "templates"))
+			if re.match(r'.*\.base$', f)]
 
 		if len(templates) == 0:
 			logger.warn("No template files found under %s, this will lead to theme files being blank!",
@@ -115,7 +116,7 @@ class ThemeGenerator:
 			md5_hash = utils.md5(image)[:20]
 			theme_path = os.path.join(theme_dir, md5_hash)
 
-			if not os.path.isfile(theme_path) or override:
+			if not os.path.isfile(theme_path + '.sh') or override:
 				non_gen_imgs.append([image, theme_path])
 		
 		if len(non_gen_imgs) > 0:
@@ -124,21 +125,18 @@ class ThemeGenerator:
 				image = non_gen_imgs[i][0]
 				theme_path = non_gen_imgs[i][1]
 			
-				# If the theme file does not already exist, generate it
-				tqdm_logger.debug("Generating theme file %s", theme_path)
 				# Generate the pallete
 				tqdm_logger.debug("Getting color pallete...")
 				colors = colorgen.generate(image)
 
 				tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
 
-				tqdm_logger.debug("Clearing the theme file...")
-				open(os.path.expanduser(theme_path), 'w').close()
-
 				# Applies values to the templates and concats into single theme file	
 				for template in templates:
+					template_dir = os.path.join(DATA_PATH, 'templates/' + template)
 					tqdm_logger.debug("Adding %s template to theme file", template)
-					with open(template) as file:
+					out_path = os.path.join(theme_dir, md5_hash + '-' + template[:-5])
+					with open(template_dir) as file:
 						filedata = file.read()
 
 						# Change placeholder values
@@ -146,12 +144,15 @@ class ThemeGenerator:
 						for i in range(len(colors)):
 							filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
 						filedata = filedata.replace("[background]", str(colors[0]))
-						filedata = filedata.replace("[foreground]", str(colors[7]))
-						filedata = filedata.replace("[foreground_dark]", str(colors[15]))
+						filedata = filedata.replace("[background_dark]", str(colors[7]))
+						filedata = filedata.replace("[foreground]", str(colors[15]))
+						filedata = filedata.replace("[foreground_dark]", str(colors[8]))
 
 						# Write to the theme file
 						tqdm_logger.debug("Writing updated template file from %s to theme file %s", template, theme_path)
-						with open(os.path.expanduser(theme_path), 'a') as file:
-							file.write("\n"+ filedata + "\n")	
+
+						open(os.path.expanduser(out_path), 'w').close()
+						with open(os.path.expanduser(out_path), 'a') as file:
+							file.write(filedata)	
 		else:
 			logger.info("No themes to generate.")

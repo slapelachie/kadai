@@ -71,7 +71,8 @@ def run_post_scripts(args=None):
 		# If arguments are passed
 		if args:
 			# Flatten the array to one dimension
-			script = [[script], args.split(" ")]
+			script = [[script], args]
 			script = [y for x in script for y in x]
 
-		subprocess.run(script)
+		with open(os.devnull, 'w') as devnull:
+			subprocess.run(script, stdout=devnull, stderr=subprocess.STDOUT)
