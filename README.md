@@ -3,7 +3,6 @@ Simple wallpaper manager for tiling window managers.
 
 This project is heavily inspired by [pywal](https://github.com/dylanaraps/pywal) with the main color generator being based off of it.
 KADAI is a project aimed at making theme alignment easier for the entire desktop experience, and is aimed towards users of tiling window managers (mainly i3wm).
-KADAI generates an Xresources file and sets the background.
 The main philosophy behind KADAI is to not edit any predefined configuration files, but instead works as an extra layer to your customised layout.
 
 ## How to use
