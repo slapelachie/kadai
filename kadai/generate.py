@@ -144,7 +144,7 @@ class ThemeGenerator:
 						for i in range(len(colors)):
 							filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
 						filedata = filedata.replace("[background]", str(colors[0]))
-						filedata = filedata.replace("[background_dark]", str(colors[7]))
+						filedata = filedata.replace("[background_light]", str(colors[7]))
 						filedata = filedata.replace("[foreground]", str(colors[15]))
 						filedata = filedata.replace("[foreground_dark]", str(colors[8]))
 

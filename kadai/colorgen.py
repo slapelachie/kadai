@@ -48,7 +48,9 @@ def rgb_to_hsv(color):
 	Arguments:
 		color (list) -- list of red, green, and blue for a color [r, g, b]
 	"""
-	return colorsys.rgb_to_hsv(*color)
+	new_cols = list(colorsys.rgb_to_hsv(*[float(x/256) for x in color]))
+	new_cols[0] = int(new_cols[0]*360)
+	return tuple(new_cols)
 
 def hsv_to_rgb(color):
 	"""
@@ -130,7 +132,7 @@ def gen_colors(img):
 
 	return [rgb_to_hex(color) for color in raw_colors]
 
-def get_color_distance(cols):
+def sort_by_vibrance(cols):
 	"""
 	Determines the distance of a list of colors from a color
 
@@ -147,9 +149,31 @@ def get_color_distance(cols):
 
 		hls_distance.append([cols[i], vibrance])
 
-	return hls_distance
+	return sorted(hls_distance, key = lambda x: abs(x[1]-1))
 
-def palette_varience(cols):
+def adjust_colors(colors):
+	# Adjust colors
+	for i in range(len(colors)):
+		if i != 0 and i != 7:    
+			col=hex_to_rgb(colors[i])
+			if i <= 7:
+				while rgb_to_hsv(col)[2] < 0.7:
+					col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
+				while rgb_to_hsv(col)[2] > 0.75:
+					col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
+			else: 
+				while rgb_to_hsv(col)[2] < 0.8:
+					 col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
+				while rgb_to_hsv(col)[2] > 0.85:
+					 col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
+
+			colors[i] = rgb_to_hex(col)
+
+	return colors
+
+
+
+def sort_colors(cols, sort_type):
 	"""
 	Attempts at creating a palette with unique colors
 
@@ -158,28 +182,20 @@ def palette_varience(cols):
 
 	Arguments:
 		cols (list) -- list of hexidecimal formatted colors
+		sort_type (string) -- the type of sort to appy
 	"""
 
-	distance = get_color_distance(cols)
-	# Sort the colors based on their distance
-	sorted_cols = sorted(distance, key = lambda x: abs(x[1]-1))
+	if sort_type == "VIBRANCE":
+		# Sort by vibrance and get the least vibrant and the 7 most vibrant
+		sorted_cols = [x[0] for x in sort_by_vibrance(cols)]
+		new_cols=[sorted_cols[0]] + sorted_cols[len(sorted_cols)-7:]
 
-	for i in range (len(sorted_cols)):
-		sorted_cols[i]=sorted_cols[i][0]
+		# Sort back to order of dominant colors
+		return [x for x in cols if x in new_cols]
+	#elif sort_type == "MATCH":
+	#	base_colors = ["#000000", "#ff6565", "#93d44f", ""]
 
-	new_cols=[sorted_cols[0]]
-	new_cols = new_cols + sorted_cols[len(sorted_cols)-7:]
-
-	# Sort back to order of dominant colors
-	dom_sort_cols = []
-	for i in cols:
-		for j in new_cols:
-			if j == i:
-				dom_sort_cols.append(i)
-
-	return dom_sort_cols
-
-def adjust(cols):
+def set_bg_fg(cols):
 	"""
 	Create and fine tune the palette
 
@@ -189,30 +205,12 @@ def adjust(cols):
 
 	# Brings the last color to the front, as it is the least vibrant
 	# and good for backgrounds
-	last_col = cols[-1]
-	cols = cols[:-1]
-	cols.insert(0,last_col)
 
 	raw_colors = [*cols, *cols]
 
 	# Darken the blacks
 	raw_colors[0] = darken_color(cols[0], 0.95)
 	raw_colors[8] = darken_color(cols[0], 0.75)        
-
-	# Lighten other colors
-	for i in range(len(raw_colors)):
-		if i != 0 and i != 7:    
-			col=hex_to_rgb(raw_colors[i])
-			if i <= 7:
-				while (col[0] + col[1] + col[2]) < 350:
-					col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
-			else: 
-				while (col[0] + col[1] + col[2]) < 250:
-					 col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
-				while (col[0] + col[1] + col[2]) > 300:
-					 col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
-
-			raw_colors[i] = rgb_to_hex(col)
 
 	# Whiten the whites
 	raw_colors[7] = lighten_color(cols[0], 0.90)
@@ -229,8 +227,8 @@ def get(img):
 		img (str) -- location of the image
 	"""
 	cols = gen_colors(img)
-	new_cols = palette_varience(cols)
-	return adjust(new_cols)
+	new_cols = sort_colors(adjust_colors(cols), 'VIBRANCE')
+	return set_bg_fg(new_cols)
 
 
 def generate(image):
