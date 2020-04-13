@@ -144,9 +144,9 @@ class ThemeGenerator:
 						for i in range(len(colors)):
 							filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
 						filedata = filedata.replace("[background]", str(colors[0]))
-						filedata = filedata.replace("[background_light]", str(colors[7]))
+						filedata = filedata.replace("[background_light]", str(colors[8]))
 						filedata = filedata.replace("[foreground]", str(colors[15]))
-						filedata = filedata.replace("[foreground_dark]", str(colors[8]))
+						filedata = filedata.replace("[foreground_dark]", str(colors[7]))
 
 						# Write to the theme file
 						tqdm_logger.debug("Writing updated template file from %s to theme file %s", template, theme_path)
