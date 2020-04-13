@@ -1,5 +1,6 @@
 # KADAI
 Simple wallpaper manager for tiling window managers.
+
 ![Run Tests](https://github.com/slapelachie/kadai/workflows/Run%20Tests/badge.svg)
 
 This project is heavily inspired by [pywal](https://github.com/dylanaraps/pywal) with the main color generator being based off of it.
