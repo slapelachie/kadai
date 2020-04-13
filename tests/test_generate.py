@@ -4,7 +4,7 @@ import os
 from kadai import generate
 from kadai.generate import ThemeGenerator
 
-out_dir = '/tmp/kadai'
+out_dir = 'tests/artifacts/'
 template_dir = 'tests/assets/templates'
 
 class TestUtils(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestUtils(unittest.TestCase):
 		self.assertEqual(len(template_files), 2)
 	
 	def test_generate(self):
-		shutil.rmtree(out_dir)
+		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 		ThemeGenerator('tests/assets/test.jpg', path=out_dir, quite=True).generate(template_dir=template_dir)
 		self.assertIs(os.path.isfile(os.path.join(out_dir, 'themes/74366ae1ada324257e36-colors.sh')), True)
 		self.assertIs(os.path.isfile(os.path.join(out_dir, 'themes/74366ae1ada324257e36-Xdefaults')), True)
