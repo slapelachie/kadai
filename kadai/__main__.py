@@ -71,17 +71,18 @@ def parse_args(parser):
 	# If the subcommand 'theme' is called
 	if args.i:
 		if args.g:
-			ThemeGenerator(args.i, VERBOSE_MODE).generate(args.override)
+			ThemeGenerator(args.i, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).\
+				generate(args.override)
 			sys.exit(0)
 		else:
-			ThemeGenerator(args.i, VERBOSE_MODE).update()
+			ThemeGenerator(args.i, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
 			sys.exit(0)
 	elif args.p:
 		# Check if the last file exists, if it does update to that
 		if(os.path.isfile(os.path.join(CACHE_PATH, "last"))):
 			with open(os.path.join(CACHE_PATH, "last"), "r") as file:
 				filedata = str(file.read()).rstrip()
-				ThemeGenerator(filedata, VERBOSE_MODE).update()
+				ThemeGenerator(filedata, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
 		else:
 			logger.critical("Last file does not exist!")
 			sys.exit(1)
@@ -102,6 +103,7 @@ def parse_args(parser):
 def main():
 	# Create required directories
 	try:
+		os.makedirs(CACHE_PATH, exist_ok=True)
 		os.makedirs(DATA_PATH, exist_ok=True)
 		os.makedirs(CONFIG_PATH, exist_ok=True)
 	except:

@@ -33,14 +33,16 @@ class ThemeGenerator:
 		image (str) -- location of the image
 	"""
 
-	def __init__(self, image, path=CACHE_PATH, verbose=False, quite=False):
+	def __init__(self, image, directory, template_dir, verbose=False, quite=False):
 		self.verbose = verbose
-		self.path = path
+		self.path = directory
 
-		self.theme_dir = os.path.join(self.path, "themes")
+		self.theme_dir = os.path.join(self.path, "themes/")
 		try:
 			os.makedirs(self.theme_dir, exist_ok=True)
 		except: raise
+
+		self.template_dir = template_dir
 
 		if quite:
 			logger.setLevel(logging.CRITICAL)
@@ -89,7 +91,7 @@ class ThemeGenerator:
 		# If the theme doesn't exist, generate it
 		if len(theme_files) == 0:
 			logger.debug("Theme does not exist, generating...")
-			self.generate()
+			self.generate(self.template_dir)
 			self.update()
 			return
 
@@ -106,10 +108,10 @@ class ThemeGenerator:
 		if post_scripts:
 			utils.run_post_scripts([image])
 
-	def generate(self, template_dir=os.path.join(DATA_PATH, 'templates/'), override=False):
+	def generate(self, override=False):
 		""" Generates the theme passed on the parent class """
 		non_gen_imgs = []
-		templates = get_template_files(template_dir)
+		templates = get_template_files(self.template_dir)
 
 		# Recursively go through every image
 		logger.debug("Starting recursive file generation...")
@@ -119,13 +121,14 @@ class ThemeGenerator:
 			md5_hash = utils.md5_file(image)[:20]
 			theme_path = os.path.join(self.theme_dir, md5_hash)
 
-			if not os.path.isfile(theme_path + '.sh') or override:
+			if not (len([x for x in self.theme_dir if md5_hash in x]) > 0) or override:
 				non_gen_imgs.append([image, theme_path])
 		
 		if len(non_gen_imgs) > 0:
 			logger.info('Generating themes...')
 			for i in tqdm.tqdm(range(len(non_gen_imgs))):
 				image = non_gen_imgs[i][0]
+				md5_hash = utils.md5_file(image)[:20]
 				theme_path = non_gen_imgs[i][1]
 			
 				# Generate the pallete
@@ -136,7 +139,7 @@ class ThemeGenerator:
 
 				# Applies values to the templates and concats into single theme file	
 				for template in templates:
-					template_path = os.path.join(template_dir, template)
+					template_path = os.path.join(self.template_dir, template)
 					tqdm_logger.debug("Adding %s template to theme file", template)
 					out_file = os.path.join(self.theme_dir, md5_hash + '-' + template[:-5])
 					with open(template_path) as file:
