@@ -54,39 +54,29 @@ def hsv_to_rgb(color):
 	color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
 	return [int(col*255) for col in color_rgb]
 
-def hex_to_rgb(color):
-	"""
-	Convert a hex color to rgb.
-
-	Arguments:
-		color (string) -- hexadecimal value with the leading '#'
-	"""
-
-	return tuple(bytes.fromhex(color.strip("#")))
-
 def darken_color(color, amount):
 	"""
-	Darken a hex color.
+	Darken color.
 
 	Arguments:
-		color (string) -- hexadecimal value with the leading '#'
+		color (tupple (size:3)) -- rgb color`
 		amount (float) -- value from 0 to 1
 	"""
 
-	color = [int(col * (1 - amount)) for col in hex_to_rgb(color)]
-	return rgb_to_hex(color)
+	color = [int(col * (1 - amount)) for col in color]
+	return color
 
 def lighten_color(color, amount):
 	"""
-	Lighten a hex color.
+	Lighten a color.
 
 	Arguments:
-		color (string) -- hexadecimal value with the leading '#'
+		color (tuple (size:3)) -- an rgb color
 		amount (float) -- value from 0 to 1
 	"""
 
-	color = [int(col + (255 - col) * amount) for col in hex_to_rgb(color)]
-	return rgb_to_hex(color)
+	color = [int(col + (255 - col) * amount) for col in color]
+	return color
 
 def image_brightness(im_file):
 	# Converting to RGB because stat.mean excepts r,g,b but with an RGBA file
@@ -111,21 +101,21 @@ def gen_colors(img):
 		logger.error("ColorThief couldn't generate a suitable palette.")
 		sys.exit(1)
 
-	return [rgb_to_hex(color) for color in raw_colors]
+	return raw_colors
 
-def sort_by_vibrance(cols):
+def sort_by_vibrance(colors):
 	"""
 	Sorts the colors by their vibrance (saturation * brightness(value))
 
 	Arguments:
-		cols (list) -- list of hexidecimal formatted colors
+		colors (list) -- list of rgb colors
 	"""
 
 	hsv_distance=[]
 
 	# Calculate the vibrance of the image
-	for i in range(len(cols)):
-		hsv_color = [*rgb_to_hsv(hex_to_rgb(cols[i]))]
+	for i in range(len(colors)):
+		hsv_color = [*rgb_to_hsv(colors[i])]
 		ideal_brightness=1
 
 		# Basically the closer the brightness is to the ideal brightness and
@@ -135,7 +125,7 @@ def sort_by_vibrance(cols):
 		# the max should be the greatest
 		vibrance=hsv_color[1]*(2+(1-((hsv_color[2]/ideal_brightness)+(ideal_brightness/hsv_color[2]))))
 
-		hsv_distance.append([cols[i], vibrance])
+		hsv_distance.append([colors[i], vibrance])
 
 	return sorted(hsv_distance, key = lambda x: abs(x[1]-1))
 
@@ -145,52 +135,52 @@ def adjust_colors(cols):
 	with colors 0-7 being darker then 8-15
 
 	Arguments:
-		cols (list) a list of hexadecimal colors
+		cols (list) a list of rgb colors
 	"""
 
 	colors = [*cols, *cols]
 	# Adjust colors
 	for i in range(len(colors)):
-		col=hex_to_rgb(colors[i])
+		color = colors[i]
 		if i <= 7:
-			while rgb_to_hsv(col)[2] < 0.65:
-				col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
-			while rgb_to_hsv(col)[2] > 0.7:
-				col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
+			while rgb_to_hsv(color)[2] < 0.65:
+				color = lighten_color(color, 0.05)
+			while rgb_to_hsv(color)[2] > 0.7:
+				color = darken_color(color, 0.05)
 		else: 
-			while rgb_to_hsv(col)[2] < 0.75:
-					col = hex_to_rgb(lighten_color(rgb_to_hex(col), 0.05))
-			while rgb_to_hsv(col)[2] > 0.8:
-					col = hex_to_rgb(darken_color(rgb_to_hex(col), 0.05))
+			while rgb_to_hsv(color)[2] < 0.75:
+				color = lighten_color(color, 0.05)
+			while rgb_to_hsv(color)[2] > 0.8:
+				color = darken_color(color, 0.05)
 
-		colors[i] = rgb_to_hex(col)
+		colors[i] = color
 
 	return colors
 
-def sort_colors(cols):
+def sort_colors(colors):
 	"""
 	Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 8)
 
 	Arguments:
-		cols (list) -- list of hexidecimal formatted colors
+		colors (list) -- list of rgb formatted colors
 	"""
 
 	# Sort by vibrance and get the least vibrant and the 7 most vibrant
-	sorted_cols = [x[0] for x in sort_by_vibrance(cols)]
-	return [sorted_cols[-1]] + sorted_cols[:7]
+	sorted_colors = [x[0] for x in sort_by_vibrance(colors)]
+	return [sorted_colors[-1]] + sorted_colors[:7]
 
 def change_value(color, value):
 	"""
 	Changes the value (in hsv) to the parsed argument
 
 	Arguments:
-		color (string) a hexidecimal color
+		color (tuple (size:3)) a rgb color
 		value (int) the value of the new color (accepts from 0 to 1 (e.g. 0.53))
 	"""
 
-	color_hsv = list(rgb_to_hsv(hex_to_rgb(color)))
+	color_hsv = list(rgb_to_hsv(color))
 	color_hsv[2] = value
-	return rgb_to_hex(hsv_to_rgb(color_hsv))
+	return hsv_to_rgb(color_hsv)
 
 def set_bg_fg(colors, brightness):
 	"""
@@ -198,7 +188,8 @@ def set_bg_fg(colors, brightness):
 	of the whole picture
 
 	Arguments:
-		cols (list) -- list of hexidecimal formatted colors, expects 8 unique colors
+		colors (list) -- list of rgb colors, expects 8 unique colors
+		brightness (int) -- the brightness of the image
 	"""
 
 	scaled_brightness = float(brightness/(17*255))
@@ -215,7 +206,7 @@ def set_bg_fg(colors, brightness):
 
 def get(img):
 	"""
-	Generate the palette.
+	Generate the palette. Returns a list of hexidecimal colors
 	
 	Arguments:
 		img (str) -- location of the image
@@ -223,8 +214,7 @@ def get(img):
 	cols = gen_colors(img)
 	brightness = int(image_brightness(img))
 	new_cols = adjust_colors(sort_colors(cols))
-	return set_bg_fg(new_cols, brightness)
-
+	return [rgb_to_hex(color) for color in set_bg_fg(new_cols, brightness)]
 
 def generate(image):
 	"""
