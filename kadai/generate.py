@@ -80,7 +80,7 @@ class ThemeGenerator:
 		logger.debug("Set image to %s", image)
 
 		# Get the md5 hash of the image
-		md5_hash = utils.md5(image)[:20]
+		md5_hash = utils.md5_file(image)[:20]
 		logger.debug("Hash for %s is %s", image, md5_hash)
 	
 		theme_files = [f for f in os.listdir(self.theme_dir)
@@ -116,7 +116,7 @@ class ThemeGenerator:
 		for i in range(len(self.image)):
 			image = self.image[i]
 			image = utils.get_image(image)
-			md5_hash = utils.md5(image)[:20]
+			md5_hash = utils.md5_file(image)[:20]
 			theme_path = os.path.join(self.theme_dir, md5_hash)
 
 			if not os.path.isfile(theme_path + '.sh') or override:
