@@ -15,10 +15,15 @@ from .settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
 logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
 tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
 
-theme_dir = os.path.join(CACHE_PATH, "themes")
-try:
-	os.makedirs(theme_dir, exist_ok=True)
-except: raise
+def get_template_files(template_dir):
+	# Get all templates in the templates folder
+	templates = [f for f in os.listdir(template_dir)
+		if re.match(r'.*\.base$', f)]
+
+	if len(templates) == 0:
+		raise "No template files!"
+
+	return templates
 
 class ThemeGenerator:
 	"""
@@ -28,9 +33,19 @@ class ThemeGenerator:
 		image (str) -- location of the image
 	"""
 
-	def __init__(self, image, verbose=False):
+	def __init__(self, image, path=CACHE_PATH, verbose=False, quite=False):
 		self.verbose = verbose
-		if DEBUG_MODE:
+		self.path = path
+
+		self.theme_dir = os.path.join(self.path, "themes")
+		try:
+			os.makedirs(self.theme_dir, exist_ok=True)
+		except: raise
+
+		if quite:
+			logger.setLevel(logging.CRITICAL)
+			tqdm_logger.setLevel(logging.CRITICAL)
+		elif DEBUG_MODE:
 			logger.setLevel(logging.DEBUG)
 			tqdm_logger.setLevel(logging.DEBUG)
 		elif verbose:
@@ -49,7 +64,7 @@ class ThemeGenerator:
 			logger.critical("File does not exist! Exiting...")
 			sys.exit(1)
 
-	def update(self):
+	def update(self, post_scripts=True):
 		"""
 		Updates the theme to the parsed image
 
@@ -57,7 +72,6 @@ class ThemeGenerator:
 			lockscreen (bool) -- if the lockscreen should be generated
 				default: False
 		"""
-
 		# Get a random image from the list of images
 		images = self.image
 		random.shuffle(images)
@@ -69,7 +83,7 @@ class ThemeGenerator:
 		md5_hash = utils.md5(image)[:20]
 		logger.debug("Hash for %s is %s", image, md5_hash)
 	
-		theme_files = [f for f in os.listdir(os.path.join(theme_dir))
+		theme_files = [f for f in os.listdir(self.theme_dir)
 			if re.match(r'^' + md5_hash + r'-', f)]
 
 		# If the theme doesn't exist, generate it
@@ -81,28 +95,21 @@ class ThemeGenerator:
 
 		for theme in theme_files:
 			theme_type = theme[21:]
-			symlink_path = os.path.join(CACHE_PATH, theme_type)
+			symlink_path = os.path.join(self.path, theme_type)
 
 			if os.path.isfile(symlink_path):
 				os.remove(symlink_path)
 
-			os.symlink(os.path.join(theme_dir, theme), symlink_path)
+			os.symlink(os.path.join(self.theme_dir, theme), symlink_path)
 
 		# Run external scripts
-		utils.run_post_scripts([image])
+		if post_scripts:
+			utils.run_post_scripts([image])
 
-	def generate(self, override=False):
+	def generate(self, template_dir=os.path.join(DATA_PATH, 'templates/'), override=False):
 		""" Generates the theme passed on the parent class """
 		non_gen_imgs = []
-
-		# Get all templates in the templates folder
-		logger.debug("Searching recursively for templates under %s", os.path.join(DATA_PATH, "templates"))
-		templates = [f for f in os.listdir(os.path.join(DATA_PATH, "templates"))
-			if re.match(r'.*\.base$', f)]
-
-		if len(templates) == 0:
-			logger.warn("No template files found under %s, this will lead to theme files being blank!",
-				os.path.join(DATA_PATH, "templates"))
+		templates = get_template_files(template_dir)
 
 		# Recursively go through every image
 		logger.debug("Starting recursive file generation...")
@@ -110,7 +117,7 @@ class ThemeGenerator:
 			image = self.image[i]
 			image = utils.get_image(image)
 			md5_hash = utils.md5(image)[:20]
-			theme_path = os.path.join(theme_dir, md5_hash)
+			theme_path = os.path.join(self.theme_dir, md5_hash)
 
 			if not os.path.isfile(theme_path + '.sh') or override:
 				non_gen_imgs.append([image, theme_path])
@@ -129,10 +136,10 @@ class ThemeGenerator:
 
 				# Applies values to the templates and concats into single theme file	
 				for template in templates:
-					template_dir = os.path.join(DATA_PATH, 'templates/' + template)
+					template_path = os.path.join(template_dir, template)
 					tqdm_logger.debug("Adding %s template to theme file", template)
-					out_path = os.path.join(theme_dir, md5_hash + '-' + template[:-5])
-					with open(template_dir) as file:
+					out_file = os.path.join(self.theme_dir, md5_hash + '-' + template[:-5])
+					with open(template_path) as file:
 						filedata = file.read()
 
 						# Change placeholder values
@@ -147,8 +154,8 @@ class ThemeGenerator:
 						# Write to the theme file
 						tqdm_logger.debug("Writing updated template file from %s to theme file %s", template, theme_path)
 
-						open(os.path.expanduser(out_path), 'w').close()
-						with open(os.path.expanduser(out_path), 'a') as file:
+						open(os.path.expanduser(out_file), 'w').close()
+						with open(os.path.expanduser(out_file), 'a') as file:
 							file.write(filedata)	
 		else:
 			logger.info("No themes to generate.")

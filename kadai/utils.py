@@ -51,22 +51,23 @@ def get_dir_imgs(img_dir):
 	return [img.name for img in os.scandir(img_dir)
 			if img.name.lower().endswith(file_types)]
 
-def run_post_scripts(args=None):
-	POST_SCRIPTS_DIR = os.path.join(DATA_PATH, 'postscripts')
-
+def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):
 	try:
-		os.makedirs(POST_SCRIPTS_DIR, exist_ok=True)
+		os.makedirs(post_scripts_dir, exist_ok=True)
 	except:
 		raise
 
-	scripts = [f for f in os.listdir(POST_SCRIPTS_DIR) 
+	scripts = [f for f in os.listdir(post_scripts_dir) 
 		if re.match(r'^([0-9]{2}-\w+)', f) 
-			and os.access(os.path.join(POST_SCRIPTS_DIR, f), os.X_OK)]
+			and os.access(os.path.join(post_scripts_dir, f), os.X_OK)]
 	scripts.sort()
+	return scripts
 
-		
+def run_post_scripts(args=None, post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):		
+	scripts = get_post_scripts(post_scripts_dir)
+
 	for script in scripts:
-		script = os.path.join(POST_SCRIPTS_DIR, script)
+		script = os.path.join(post_scripts_dir, script)
 
 		# If arguments are passed
 		if args:
