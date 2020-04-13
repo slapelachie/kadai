@@ -15,6 +15,7 @@ class TestUtils(unittest.TestCase):
 	def test_generate(self):
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 		ThemeGenerator('tests/assets/test.jpg', path=out_dir, quite=True).generate(template_dir=template_dir)
+		print(os.listdir(out_dir))
 		self.assertIs(os.path.isfile(os.path.join(out_dir, 'themes/74366ae1ada324257e36-colors.sh')), True)
 		self.assertIs(os.path.isfile(os.path.join(out_dir, 'themes/74366ae1ada324257e36-Xdefaults')), True)
 
