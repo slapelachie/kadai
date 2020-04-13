@@ -4,7 +4,7 @@ import os
 from kadai import generate
 from kadai.generate import ThemeGenerator
 
-out_dir = 'artifacts'
+out_dir = '/tmp/github-runner-kadai/'
 template_dir = 'tests/assets/templates'
 
 class TestUtils(unittest.TestCase):
