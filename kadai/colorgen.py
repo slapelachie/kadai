@@ -3,8 +3,9 @@
 # colorgen
 # Author: slapelachie
 # Note: Most of this code is from pywal, but is modified to get a greater range of colors from 
-# the top 16 colors of the wallpaper
+# the top 8 colors with a better algorithim
 #
+# Use kadai.colorgen.generate('file.png') to get hex colors suited for Xdefault colors
 
 import logging
 import sys
@@ -38,8 +39,7 @@ def rgb_to_hsv(color):
 	Arguments:
 		color (list) -- list of red, green, and blue for a color [r, g, b]
 	"""
-	new_cols = list(colorsys.rgb_to_hsv(*[float(x/256) for x in color]))
-	new_cols[0] = int(new_cols[0]*360)
+	new_cols = list(colorsys.rgb_to_hsv(*[float(x/255) for x in color]))
 	return tuple(new_cols)
 
 def hsv_to_rgb(color):
@@ -49,39 +49,12 @@ def hsv_to_rgb(color):
 	Arguments:
 		color (list) -- list of hue, saturation, and value for a color [h, s, v]
 	"""
-	color[0] = int(color[0]/360)
 
 	color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
 	return [int(col*255) for col in color_rgb]
 
-def darken_color(color, amount):
-	"""
-	Darken color.
-
-	Arguments:
-		color (tupple (size:3)) -- rgb color`
-		amount (float) -- value from 0 to 1
-	"""
-
-	color = [int(col * (1 - amount)) for col in color]
-	return color
-
-def lighten_color(color, amount):
-	"""
-	Lighten a color.
-
-	Arguments:
-		color (tuple (size:3)) -- an rgb color
-		amount (float) -- value from 0 to 1
-	"""
-
-	color = [int(col + (255 - col) * amount) for col in color]
-	return color
-
-def image_brightness(im_file):
-	# Converting to RGB because stat.mean excepts r,g,b but with an RGBA file
-	# it gets r,g,b,a and fails
-	im = Image.open(im_file).convert('RGB')
+def get_image_brightness(im_file):
+	im = Image.open(im_file)
 	stat = ImageStat.Stat(im)
 	r,g,b = stat.mean
 	return math.sqrt(0.299*(r**2) + 0.587*(g**2) + 0.114*(b**2))
@@ -143,15 +116,9 @@ def adjust_colors(cols):
 	for i in range(len(colors)):
 		color = colors[i]
 		if i <= 7:
-			while rgb_to_hsv(color)[2] < 0.65:
-				color = lighten_color(color, 0.05)
-			while rgb_to_hsv(color)[2] > 0.7:
-				color = darken_color(color, 0.05)
+			color = change_value(color, 0.6)
 		else: 
-			while rgb_to_hsv(color)[2] < 0.75:
-				color = lighten_color(color, 0.05)
-			while rgb_to_hsv(color)[2] > 0.8:
-				color = darken_color(color, 0.05)
+			color = change_value(color, 0.8)
 
 		colors[i] = color
 
@@ -182,6 +149,19 @@ def change_value(color, value):
 	color_hsv[2] = value
 	return hsv_to_rgb(color_hsv)
 
+def change_saturation(color, saturation):
+	"""
+	Changes the value (in hsv) to the parsed argument
+
+	Arguments:
+		color (tuple (size:3)) a rgb color
+		saturation (int) the saturation of the new color (accepts from 0 to 1 (e.g. 0.53))
+	"""
+
+	color_hsv = list(rgb_to_hsv(color))
+	color_hsv[1] = saturation
+	return hsv_to_rgb(color_hsv)
+
 def set_bg_fg(colors, brightness):
 	"""
 	Modifys the background and foreground colors based on the brightness
@@ -198,11 +178,14 @@ def set_bg_fg(colors, brightness):
 	colors[0] = change_value(colors[0], scaled_brightness)
 	colors[8] = change_value(colors[8], .6 + scaled_brightness)
 
-	colors[7] = change_value(colors[7], .85 + scaled_brightness)
-	colors[15] = change_value(colors[15], min(.95 + scaled_brightness, 1))
+	colors[7] = change_saturation(
+		change_value(colors[7], .85 + scaled_brightness),
+		0.1)
+	colors[15] = change_saturation(
+		change_value(colors[15], min(.95 + scaled_brightness, 1)),
+		0.1)
 
 	return colors
-
 
 def get(img):
 	"""
@@ -212,7 +195,7 @@ def get(img):
 		img (str) -- location of the image
 	"""
 	cols = gen_colors(img)
-	brightness = int(image_brightness(img))
+	brightness = int(get_image_brightness(img))
 	new_cols = adjust_colors(sort_colors(cols))
 	return [rgb_to_hex(color) for color in set_bg_fg(new_cols, brightness)]
 
@@ -226,7 +209,7 @@ def generate(image):
 
 	# Resize the image so color processing is quicker
 	img = Image.open(image)
-	image_out = img.resize((300,150), Image.NEAREST)
+	image_out = img.resize((300,150), Image.NEAREST).convert('RGB')
 	image_out.save("/tmp/tmp.png")
 	# Generate the pallete based on the small img
 	return get('/tmp/tmp.png')
