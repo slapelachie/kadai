@@ -88,10 +88,6 @@ class ThemeGenerator:
 
 			os.symlink(os.path.join(theme_dir, theme), symlink_path)
 
-		# Other programs that need to be updated for the change to occur
-		#logger.debug("Merging Xresources...")
-		#subprocess.run(["xrdb", "-merge", os.path.expanduser(theme_path)])
-
 		# Run external scripts
 		utils.run_post_scripts([image])
 
