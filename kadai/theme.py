@@ -28,7 +28,6 @@ def get_non_generated(images, theme_dir):
 	non_gen_images = []
 	theme_dir = os.path.expanduser(theme_dir)
 	for i in range(len(images)):
-		image = images[i][0]
 		md5_hash = images[i][1]
 
 		if len([os.path.join(theme_dir, x.name) for x in os.scandir(theme_dir)\

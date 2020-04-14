@@ -18,7 +18,6 @@ The arguments are the following:
 | -h, --help  | Shows the help message for the theme subcommand |
 | -g          | Switch for generating themes |
 | -i          | The input file |
-| -l          | Apply the same image as the lockscreen |
 | -p          | Use the last set theme |
 | -v          | Allows verbose logging |
 | -q          | Only show errors |
