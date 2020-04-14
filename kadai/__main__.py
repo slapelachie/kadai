@@ -9,6 +9,7 @@ import sys
 import os.path
 import logging
 import shutil
+import random
 
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from . import utils, log, generate
@@ -73,13 +74,16 @@ def parse_args(parser):
 			generate.generate(args.i, os.path.join(DATA_PATH, 'templates/'), CACHE_PATH, args.override)
 			sys.exit(0)
 		else:
+			images = utils.get_image_list(args.i)
+			random.shuffle(images)
+			image = images[0]
+
 			try:
-				generate.update(args.i, CACHE_PATH, post_scripts=True)
+				generate.update(image, CACHE_PATH, post_scripts=True)
 			except generate.noPreGenThemeError:
-				# FIXME: This generating all files when only should be doing one
-				generate.generate(args.i, os.path.join(DATA_PATH, 'templates/'),
+				generate.generate(image, os.path.join(DATA_PATH, 'templates/'),
 					CACHE_PATH, args.override)
-				generate.update(args.i, CACHE_PATH, post_scripts=True)
+				generate.update(image, CACHE_PATH, post_scripts=True)
 			sys.exit(0)
 	#elif args.p:
 	#	# Check if the last file exists, if it does update to that

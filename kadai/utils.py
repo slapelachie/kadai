@@ -67,6 +67,7 @@ def get_dir_imgs(img_dir):
 			if img.name.lower().endswith(file_types) and check_if_image(os.path.join(img_dir, img.name))]
 
 def get_image_list(image_path):
+	image_path = os.path.expanduser(image_path)
 	if os.path.isfile(image_path):
 		if(check_if_image(image_path)):
 			return [get_image(image_path)]

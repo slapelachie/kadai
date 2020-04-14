@@ -83,7 +83,7 @@ def generate(images_path, template_dir, out_dir, override=False):
 	else:
 		logger.info("No themes to generate.")
 
-def update(images_path, out_dir, post_scripts=False):
+def update(image, out_dir, post_scripts=False):
 	"""
 	Updates the theme to the parsed image
 
@@ -93,11 +93,6 @@ def update(images_path, out_dir, post_scripts=False):
 	"""
 	theme_dir = os.path.join(out_dir, 'themes/')
 	utils.ensure_output_dir_exists(theme_dir)
-
-	# Get a random image from the list of images
-	images = utils.get_image_list(images_path)
-	random.shuffle(images)
-	image = images[0]
 
 	# Get the md5 hash of the image
 	md5_hash = utils.md5_file(image)[:20]
