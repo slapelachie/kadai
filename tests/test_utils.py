@@ -18,6 +18,14 @@ class TestUtils(unittest.TestCase):
 		images = utils.get_dir_imgs('tests/assets/')
 		self.assertEqual(len(images), 1)	
 
+	def test_get_image_list_one(self):
+		images = utils.get_image_list('tests/assets/test.jpg')
+		self.assertEqual(len(images), 1)
+	
+	def test_get_image_list_all(self):
+		images = utils.get_image_list('tests/assets/')
+		self.assertEqual(len(images), 1)
+
 	def test_get_postscripts(self):
 		scripts = utils.get_post_scripts(post_scripts_dir='tests/assets/postscripts/')
 		self.assertEqual(len(scripts), 1)

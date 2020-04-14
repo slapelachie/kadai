@@ -61,14 +61,14 @@ def get_image_brightness(im_file):
 
 def gen_colors(img):
 	"""
-	Create a list of colors, max of 16 and min of 8
+	Create a list of colors, max of 12 and min of 8
 	
 	Arguments:
 		img (str) -- location of the image
 	"""
 
 	color_cmd = ColorThief(img).get_palette
-	raw_colors = color_cmd(color_count=16, quality=3)
+	raw_colors = color_cmd(color_count=12, quality=3)
 
 	if len(raw_colors) <= 8:
 		logger.error("ColorThief couldn't generate a suitable palette.")

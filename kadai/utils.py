@@ -36,8 +36,6 @@ def ensure_output_dir_exists(directory):
 		os.makedirs(directory, exist_ok=True)
 	except: raise
 
-
-
 def get_image(image):
 	"""
 	Get the absolute path of a passed file (image)
@@ -80,7 +78,7 @@ def get_image_list(image_path):
 
 		return images
 	else:
-		raise "Unknown file type!"
+		raise ValueError("Unknown file type!")
 
 
 def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):

@@ -2,7 +2,7 @@
 
 # KADAI
 # Author: slapelachie
-# Wallpaper and lockscreen theme manager
+# Wallpaper / theme manager
 
 import argparse
 import sys
@@ -12,7 +12,7 @@ import shutil
 import random
 
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
-from . import utils, log, generate
+from . import utils, log, theme
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -27,16 +27,11 @@ def get_args():
 	arg.add_argument('-q', action='store_true',
 		help='Allow only error logging')
 		
-	#clear_arg = subparser.add_parser('clear', help="Used for clearing KADAI data")
-
 	arg.add_argument("-g", action="store_true",
 		help="generate themes")
 	
 	arg.add_argument("-i", metavar="\"path/to/dir\"",
 		help="the input file")
-
-	arg.add_argument("-l", action="store_true",
-		help="generate and apply lockscreen")
 	
 	arg.add_argument("-p", action="store_true",
 		help="Use last set theme")
@@ -68,32 +63,31 @@ def parse_args(parser):
 	if args.q:
 		pass
 
-	# If the subcommand 'theme' is called
 	if args.i:
 		if args.g:
-			generate.generate(args.i, os.path.join(DATA_PATH, 'templates/'), CACHE_PATH, args.override)
+			theme.generate(args.i, os.path.join(DATA_PATH, 'templates/'), CACHE_PATH, args.override)
 			sys.exit(0)
 		else:
 			images = utils.get_image_list(args.i)
 			random.shuffle(images)
 			image = images[0]
 
+			# If the theme file does not exist generate it and then update to it
 			try:
-				generate.update(image, CACHE_PATH, post_scripts=True)
-			except generate.noPreGenThemeError:
-				generate.generate(image, os.path.join(DATA_PATH, 'templates/'),
+				theme.update(image, CACHE_PATH, post_scripts=True)
+			except theme.noPreGenThemeError:
+				theme.generate(image, os.path.join(DATA_PATH, 'templates/'),
 					CACHE_PATH, args.override)
-				generate.update(image, CACHE_PATH, post_scripts=True)
+				theme.update(image, CACHE_PATH, post_scripts=True)
 			sys.exit(0)
-	#elif args.p:
-	#	# Check if the last file exists, if it does update to that
-	#	if(os.path.isfile(os.path.join(CACHE_PATH, "last"))):
-	#		with open(os.path.join(CACHE_PATH, "last"), "r") as file:
-	#			filedata = str(file.read()).rstrip()
-	#			ThemeGenerator(filedata, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
-	#	else:
-	#		logger.critical("Last file does not exist!")
-	#		sys.exit(1)
+	elif args.p:
+		# Check if the cached image exists, if it does update to that
+		last_image = os.path.join(CACHE_PATH, "image")
+		if(utils.check_if_image(last_image)):
+			theme.update(last_image, CACHE_PATH, post_scripts=True)
+		else:
+			logger.critical("Last image invalid or does not exist!")
+			sys.exit(1)
 	
 	elif args.clear:
 		clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()

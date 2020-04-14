@@ -113,6 +113,13 @@ def update(image, out_dir, post_scripts=False):
 
 		os.symlink(os.path.join(theme_dir, theme), symlink_path)
 
+	# Link wallpaper to cache folder
+	image_symlink = os.path.join(out_dir, 'image')
+	if os.path.isfile(image_symlink):
+		os.remove(image_symlink)
+	os.symlink(image, image_symlink)
+
+
 	# Run external scripts
 	if post_scripts:
 		utils.run_post_scripts([image])

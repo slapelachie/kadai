@@ -1,12 +1,12 @@
 from . import colorgen
-from . import generate
+from . import theme
 from . import log
 from . import settings
 from . import utils
 
 ALL = [
 	"colorgen",
-	"generate",
+	"theme",
 	"log",
 	"settings",
 	"utils"
