@@ -1,9 +1,5 @@
 import sys
 import os
-import glob
-import subprocess
-import hashlib
-import random
 import logging
 import tqdm
 import re
@@ -30,12 +26,14 @@ def get_template_files(template_dir):
 
 def get_non_generated(images, theme_dir):
 	non_gen_images = []
+	theme_dir = os.path.expanduser(theme_dir)
 	for i in range(len(images)):
-		image = images[i]
-		md5_hash = utils.md5_file(image)[:20]
+		image = images[i][0]
+		md5_hash = images[i][1]
 
-		if not (len([x for x in theme_dir if md5_hash in x]) > 0):
-			non_gen_images.append([image, md5_hash])
+		if len([os.path.join(theme_dir, x.name) for x in os.scandir(theme_dir)\
+			if md5_hash in x.name]) == 0:
+			non_gen_images.append(images[i])
 
 	return non_gen_images
 
@@ -46,7 +44,7 @@ def generate(images_path, template_dir, out_dir, override=False):
 	theme_dir = os.path.join(out_dir, 'themes/')
 	utils.ensure_output_dir_exists(theme_dir)
 
-	images = utils.get_image_list(images_path)
+	images = [[i, utils.md5_file(i)] for i in utils.get_image_list(images_path)]
 	templates = get_template_files(template_dir)
 
 	generate_images = images if override else get_non_generated(images, theme_dir)
@@ -54,7 +52,8 @@ def generate(images_path, template_dir, out_dir, override=False):
 	# Recursively go through every image
 	if len(generate_images) > 0:
 		for i in tqdm.tqdm(range(len(generate_images))):
-			image, md5_hash = generate_images[i]
+			image = generate_images[i][0]
+			md5_hash = generate_images[i][1]
 		
 			# Generate the pallete
 			colors = colorgen.generate(image)
