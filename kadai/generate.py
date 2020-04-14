@@ -12,6 +12,9 @@ from . import colorgen
 from . import utils, log
 from .settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
 
+class noPreGenThemeError(Exception):
+	pass
+
 logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
 tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
 
@@ -25,140 +28,96 @@ def get_template_files(template_dir):
 
 	return templates
 
-class ThemeGenerator:
+def get_non_generated(images, theme_dir):
+	non_gen_images = []
+	for i in range(len(images)):
+		image = images[i]
+		md5_hash = utils.md5_file(image)[:20]
+
+		if not (len([x for x in theme_dir if md5_hash in x]) > 0):
+			non_gen_images.append([image, md5_hash])
+
+	return non_gen_images
+
+def generate(images_path, template_dir, out_dir, override=False):
+	""" Generates the theme passed on the parent class """
+	generate_images = []
+
+	theme_dir = os.path.join(out_dir, 'themes/')
+	utils.ensure_output_dir_exists(theme_dir)
+
+	images = utils.get_image_list(images_path)
+	templates = get_template_files(template_dir)
+
+	generate_images = images if override else get_non_generated(images, theme_dir)
+
+	# Recursively go through every image
+	if len(generate_images) > 0:
+		for i in tqdm.tqdm(range(len(generate_images))):
+			image, md5_hash = generate_images[i]
+		
+			# Generate the pallete
+			colors = colorgen.generate(image)
+
+			tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(generate_images)) + "] Generating theme for " + image + "...")
+
+			# Applies values to the templates and concats into single theme file	
+			for template in templates:
+				template_path = os.path.join(template_dir, template)
+				out_file = os.path.join(theme_dir, md5_hash + '-' + template[:-5])
+				with open(template_path) as file:
+					filedata = file.read()
+
+					# Change placeholder values
+					for i in range(len(colors)):
+						filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
+					filedata = filedata.replace("[background]", str(colors[0]))
+					filedata = filedata.replace("[background_light]", str(colors[8]))
+					filedata = filedata.replace("[foreground]", str(colors[15]))
+					filedata = filedata.replace("[foreground_dark]", str(colors[7]))
+
+					if os.path.isfile(out_file):
+						open(os.path.expanduser(out_file), 'w').close()
+					with open(os.path.expanduser(out_file), 'a') as file:
+						file.write(filedata)
+	else:
+		logger.info("No themes to generate.")
+
+def update(images_path, out_dir, post_scripts=False):
 	"""
-	Main class for generating themes
+	Updates the theme to the parsed image
 
 	Arguments:
-		image (str) -- location of the image
+		lockscreen (bool) -- if the lockscreen should be generated
+			default: False
 	"""
+	theme_dir = os.path.join(out_dir, 'themes/')
+	utils.ensure_output_dir_exists(theme_dir)
 
-	def __init__(self, image, directory, template_dir, verbose=False, quite=False):
-		self.verbose = verbose
-		self.path = directory
+	# Get a random image from the list of images
+	images = utils.get_image_list(images_path)
+	random.shuffle(images)
+	image = images[0]
 
-		self.theme_dir = os.path.join(self.path, "themes/")
-		try:
-			os.makedirs(self.theme_dir, exist_ok=True)
-		except: raise
+	# Get the md5 hash of the image
+	md5_hash = utils.md5_file(image)[:20]
 
-		self.template_dir = template_dir
+	theme_files = [f for f in os.listdir(theme_dir)
+		if re.match(r'^' + md5_hash + r'-', f)]
 
-		if quite:
-			logger.setLevel(logging.CRITICAL)
-			tqdm_logger.setLevel(logging.CRITICAL)
-		elif DEBUG_MODE:
-			logger.setLevel(logging.DEBUG)
-			tqdm_logger.setLevel(logging.DEBUG)
-		elif verbose:
-			logger.setLevel(15)
-			tqdm_logger.setLevel(15)
+	# If the theme doesn't exist, generate it
+	if len(theme_files) == 0:
+		raise noPreGenThemeError("Theme file for this image does not exist!")
 
-		# If the path is a file, get the image and set itself to that
-		if os.path.isfile(image):
-			logger.debug('Passed source is a file')
-			self.image = [utils.get_image(image)]
-		# If the path is a directory, get all images in it and get its absolute path
-		elif os.path.isdir(image):
-			logger.debug('Passed source is a directory')
-			self.image = [utils.get_image(os.path.join(image, img)) for img in utils.get_dir_imgs(image)]
-		else:
-			logger.critical("File does not exist! Exiting...")
-			sys.exit(1)
+	for theme in theme_files:
+		theme_type = theme[21:]
+		symlink_path = os.path.join(out_dir, theme_type)
 
-	def update(self, post_scripts=True):
-		"""
-		Updates the theme to the parsed image
+		if os.path.isfile(symlink_path):
+			os.remove(symlink_path)
 
-		Arguments:
-			lockscreen (bool) -- if the lockscreen should be generated
-				default: False
-		"""
-		# Get a random image from the list of images
-		images = self.image
-		random.shuffle(images)
-		image = images[0]
-		self.image = [image]
-		logger.debug("Set image to %s", image)
+		os.symlink(os.path.join(theme_dir, theme), symlink_path)
 
-		# Get the md5 hash of the image
-		md5_hash = utils.md5_file(image)[:20]
-		logger.debug("Hash for %s is %s", image, md5_hash)
-	
-		theme_files = [f for f in os.listdir(self.theme_dir)
-			if re.match(r'^' + md5_hash + r'-', f)]
-
-		# If the theme doesn't exist, generate it
-		if len(theme_files) == 0:
-			logger.debug("Theme does not exist, generating...")
-			self.generate(self.template_dir)
-			self.update()
-			return
-
-		for theme in theme_files:
-			theme_type = theme[21:]
-			symlink_path = os.path.join(self.path, theme_type)
-
-			if os.path.isfile(symlink_path):
-				os.remove(symlink_path)
-
-			os.symlink(os.path.join(self.theme_dir, theme), symlink_path)
-
-		# Run external scripts
-		if post_scripts:
-			utils.run_post_scripts([image])
-
-	def generate(self, override=False):
-		""" Generates the theme passed on the parent class """
-		non_gen_imgs = []
-		templates = get_template_files(self.template_dir)
-
-		# Recursively go through every image
-		logger.debug("Starting recursive file generation...")
-		for i in range(len(self.image)):
-			image = self.image[i]
-			image = utils.get_image(image)
-			md5_hash = utils.md5_file(image)[:20]
-			theme_path = os.path.join(self.theme_dir, md5_hash)
-
-			if not (len([x for x in self.theme_dir if md5_hash in x]) > 0) or override:
-				non_gen_imgs.append([image, theme_path])
-		
-		if len(non_gen_imgs) > 0:
-			logger.info('Generating themes...')
-			for i in tqdm.tqdm(range(len(non_gen_imgs))):
-				image = non_gen_imgs[i][0]
-				md5_hash = utils.md5_file(image)[:20]
-				theme_path = non_gen_imgs[i][1]
-			
-				# Generate the pallete
-				tqdm_logger.debug("Getting color pallete...")
-				colors = colorgen.generate(image)
-
-				tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(self.image)) + "] Generating theme for " + image + "...")
-
-				# Applies values to the templates and concats into single theme file	
-				for template in templates:
-					template_path = os.path.join(self.template_dir, template)
-					tqdm_logger.debug("Adding %s template to theme file", template)
-					out_file = os.path.join(self.theme_dir, md5_hash + '-' + template[:-5])
-					with open(template_path) as file:
-						filedata = file.read()
-
-						# Change placeholder values
-						tqdm_logger.debug("Replacing template values from %s for real values...", template)
-						for i in range(len(colors)):
-							filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
-						filedata = filedata.replace("[background]", str(colors[0]))
-						filedata = filedata.replace("[background_light]", str(colors[8]))
-						filedata = filedata.replace("[foreground]", str(colors[15]))
-						filedata = filedata.replace("[foreground_dark]", str(colors[7]))
-
-						# Write to the theme file
-						tqdm_logger.debug("Writing updated template file from %s to theme file %s", template, theme_path)
-
-						open(os.path.expanduser(out_file), 'w').close()
-						with open(os.path.expanduser(out_file), 'a') as file:
-							file.write(filedata)	
-		else:
-			logger.info("No themes to generate.")
+	# Run external scripts
+	if post_scripts:
+		utils.run_post_scripts([image])

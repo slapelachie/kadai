@@ -10,6 +10,10 @@ class TestUtils(unittest.TestCase):
 		file_md5 = utils.md5_file('tests/assets/test.jpg')
 		self.assertEqual(file_md5, '31084f2c8577234aeb5563b95a2786a8')
 
+	def test_check_if_image(self):
+		self.assertTrue(utils.check_if_image('tests/assets/test.jpg'))
+		self.assertFalse(utils.check_if_image('tests/assets/test.txt'))
+
 	def test_get_dir_images(self):
 		images = utils.get_dir_imgs('tests/assets/')
 		self.assertEqual(len(images), 1)	

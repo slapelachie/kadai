@@ -11,8 +11,7 @@ import logging
 import shutil
 
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
-from . import utils,log
-from .generate import ThemeGenerator
+from . import utils, log, generate
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -71,21 +70,27 @@ def parse_args(parser):
 	# If the subcommand 'theme' is called
 	if args.i:
 		if args.g:
-			ThemeGenerator(args.i, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).\
-				generate(args.override)
+			generate.generate(args.i, os.path.join(DATA_PATH, 'templates/'), CACHE_PATH, args.override)
 			sys.exit(0)
 		else:
-			ThemeGenerator(args.i, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
+			try:
+				generate.update(args.i, CACHE_PATH, post_scripts=True)
+			except generate.noPreGenThemeError:
+				# FIXME: This generating all files when only should be doing one
+				generate.generate(args.i, os.path.join(DATA_PATH, 'templates/'),
+					CACHE_PATH, args.override)
+				generate.update(args.i, CACHE_PATH, post_scripts=True)
 			sys.exit(0)
-	elif args.p:
-		# Check if the last file exists, if it does update to that
-		if(os.path.isfile(os.path.join(CACHE_PATH, "last"))):
-			with open(os.path.join(CACHE_PATH, "last"), "r") as file:
-				filedata = str(file.read()).rstrip()
-				ThemeGenerator(filedata, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
-		else:
-			logger.critical("Last file does not exist!")
-			sys.exit(1)
+	#elif args.p:
+	#	# Check if the last file exists, if it does update to that
+	#	if(os.path.isfile(os.path.join(CACHE_PATH, "last"))):
+	#		with open(os.path.join(CACHE_PATH, "last"), "r") as file:
+	#			filedata = str(file.read()).rstrip()
+	#			ThemeGenerator(filedata, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'), VERBOSE_MODE).update()
+	#	else:
+	#		logger.critical("Last file does not exist!")
+	#		sys.exit(1)
+	
 	elif args.clear:
 		clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
 		if(clear == "y"):

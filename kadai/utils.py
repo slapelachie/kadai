@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 import subprocess
+from PIL import Image
 
 from .settings import DATA_PATH
 
@@ -30,6 +31,13 @@ def md5_file(fname):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
 
+def ensure_output_dir_exists(directory):
+	try:
+		os.makedirs(directory, exist_ok=True)
+	except: raise
+
+
+
 def get_image(image):
 	"""
 	Get the absolute path of a passed file (image)
@@ -40,6 +48,13 @@ def get_image(image):
 	if os.path.isfile(image): 
 		return os.path.abspath(image)
 
+def check_if_image(file):
+	try:
+		Image.open(file).verify()
+		return True
+	except:
+		return False
+
 def get_dir_imgs(img_dir):
 	"""
 	Get a list of all images in a directory
@@ -48,8 +63,24 @@ def get_dir_imgs(img_dir):
 		img_dir (str) -- the directory where the images are stored
 	"""
 	file_types = ("png", "jpg", "jpeg")
-	return [img.name for img in os.scandir(img_dir)
-			if img.name.lower().endswith(file_types)]
+	return [os.path.join(img_dir, img.name) for img in os.scandir(img_dir)
+			if img.name.lower().endswith(file_types) and check_if_image(os.path.join(img_dir, img.name))]
+
+def get_image_list(image_path):
+	if os.path.isfile(image_path):
+		if(check_if_image(image_path)):
+			return [get_image(image_path)]
+		else:
+			raise "Specified file is not an image!"
+	elif os.path.isdir(image_path):
+		images = get_dir_imgs(image_path)
+		if len(images) == 0:
+			raise "Specified directory does not contain any images!"
+
+		return images
+	else:
+		raise "Unknown file type!"
+
 
 def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):
 	try:
