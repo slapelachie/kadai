@@ -43,7 +43,7 @@ def generate(images_path, template_dir, out_dir, override=False):
 	theme_dir = os.path.join(out_dir, 'themes/')
 	utils.ensure_output_dir_exists(theme_dir)
 
-	images = [[i, utils.md5_file(i)] for i in utils.get_image_list(images_path)]
+	images = [[i, utils.md5_file(i)[:20]] for i in utils.get_image_list(images_path)]
 	templates = get_template_files(template_dir)
 
 	generate_images = images if override else get_non_generated(images, theme_dir)
