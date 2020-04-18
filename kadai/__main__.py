@@ -70,7 +70,7 @@ def parse_args(parser):
 		else:
 			images = utils.get_image_list(args.i)
 			random.shuffle(images)
-			image = images[0]
+			image = utils.get_image(images[0])
 
 			# If the theme file does not exist generate it and then update to it
 			try:

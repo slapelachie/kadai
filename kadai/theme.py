@@ -120,4 +120,4 @@ def update(image, out_dir, post_scripts=False):
 
 	# Run external scripts
 	if post_scripts:
-		utils.run_post_scripts([image])
+		utils.run_post_scripts()

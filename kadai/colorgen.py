@@ -61,14 +61,14 @@ def get_image_brightness(im_file):
 
 def gen_colors(img):
 	"""
-	Create a list of colors, max of 12 and min of 8
+	Create a list of colors, max of 16 and min of 8
 	
 	Arguments:
 		img (str) -- location of the image
 	"""
 
 	color_cmd = ColorThief(img).get_palette
-	raw_colors = color_cmd(color_count=12, quality=3)
+	raw_colors = color_cmd(color_count=16, quality=3)
 
 	if len(raw_colors) <= 8:
 		logger.error("ColorThief couldn't generate a suitable palette.")
@@ -100,7 +100,11 @@ def sort_by_vibrance(colors):
 
 		hsv_distance.append([colors[i], vibrance])
 
-	return sorted(hsv_distance, key = lambda x: abs(x[1]-1))
+	adj_colors = sorted(hsv_distance, key = lambda x:abs(x[1]-1))
+	return [i[0] for i in adj_colors]
+
+def sort_to_list(colors, color_list):
+	return [i for i in color_list if i in colors]
 
 def adjust_colors(cols):
 	"""
@@ -133,8 +137,10 @@ def sort_colors(colors):
 	"""
 
 	# Sort by vibrance and get the least vibrant and the 7 most vibrant
-	sorted_colors = [x[0] for x in sort_by_vibrance(colors)]
-	return [sorted_colors[-1]] + sorted_colors[:7]
+	sorted_colors = sort_by_vibrance(colors)
+	top_vibrant = sorted_colors[:8]
+	return sort_to_list(top_vibrant, colors)
+
 
 def change_value(color, value):
 	"""

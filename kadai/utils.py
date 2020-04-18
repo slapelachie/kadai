@@ -93,17 +93,11 @@ def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):
 	scripts.sort()
 	return scripts
 
-def run_post_scripts(args=None, post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):		
+def run_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):		
 	scripts = get_post_scripts(post_scripts_dir)
 
 	for script in scripts:
 		script = os.path.join(post_scripts_dir, script)
-
-		# If arguments are passed
-		if args:
-			# Flatten the array to one dimension
-			script = [[script], args]
-			script = [y for x in script for y in x]
 
 		with open(os.devnull, 'w') as devnull:
 			subprocess.run(script, stdout=devnull, stderr=subprocess.STDOUT)
