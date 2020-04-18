@@ -65,26 +65,28 @@ def parse_args(parser):
 
 	if args.i:
 		if args.g:
-			theme.generate(args.i, os.path.join(DATA_PATH, 'templates/'), CACHE_PATH, args.override)
+			theme.generate(args.i, CACHE_PATH, args.override)
 			sys.exit(0)
 		else:
 			images = utils.get_image_list(args.i)
 			random.shuffle(images)
-			image = utils.get_image(images[0])
+			image = images[0]
 
 			# If the theme file does not exist generate it and then update to it
 			try:
-				theme.update(image, CACHE_PATH, post_scripts=True)
+				theme.update(image, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'),
+					post_scripts=True)
 			except theme.noPreGenThemeError:
-				theme.generate(image, os.path.join(DATA_PATH, 'templates/'),
-					CACHE_PATH, args.override)
-				theme.update(image, CACHE_PATH, post_scripts=True)
+				theme.generate(image, CACHE_PATH, args.override)
+				theme.update(image, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'),
+					post_scripts=True)
 			sys.exit(0)
 	elif args.p:
 		# Check if the cached image exists, if it does update to that
 		last_image = os.path.join(CACHE_PATH, "image")
 		if(utils.check_if_image(last_image)):
-			theme.update(last_image, CACHE_PATH, post_scripts=True)
+			theme.update(last_image, CACHE_PATH,
+				os.path.join(DATA_PATH, 'templates/'), post_scripts=True)
 		else:
 			logger.critical("Last image invalid or does not exist!")
 			sys.exit(1)

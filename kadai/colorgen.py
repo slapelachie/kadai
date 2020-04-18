@@ -215,7 +215,7 @@ def generate(image):
 
 	# Resize the image so color processing is quicker
 	img = Image.open(image)
-	image_out = img.resize((300,150), Image.NEAREST).convert('RGB')
+	image_out = img.resize((150,75), Image.NEAREST).convert('RGB')
 	image_out.save("/tmp/tmp.png")
 	# Generate the pallete based on the small img
 	return get('/tmp/tmp.png')

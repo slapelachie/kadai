@@ -3,6 +3,7 @@ import os
 import logging
 import tqdm
 import re
+import json
 
 from . import colorgen
 from . import utils, log
@@ -36,7 +37,7 @@ def get_non_generated(images, theme_dir):
 
 	return non_gen_images
 
-def generate(images_path, template_dir, out_dir, override=False):
+def generate(images_path, out_dir, override=False):
 	""" Generates the theme passed on the parent class """
 	generate_images = []
 
@@ -44,7 +45,8 @@ def generate(images_path, template_dir, out_dir, override=False):
 	utils.ensure_output_dir_exists(theme_dir)
 
 	images = [[i, utils.md5_file(i)[:20]] for i in utils.get_image_list(images_path)]
-	templates = get_template_files(template_dir)
+	template = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+		"data/template.json")
 
 	generate_images = images if override else get_non_generated(images, theme_dir)
 
@@ -53,35 +55,30 @@ def generate(images_path, template_dir, out_dir, override=False):
 		for i in tqdm.tqdm(range(len(generate_images))):
 			image = generate_images[i][0]
 			md5_hash = generate_images[i][1]
+			out_file = os.path.join(theme_dir, md5_hash + '.json')
 		
 			# Generate the pallete
 			colors = colorgen.generate(image)
 
 			tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(generate_images)) + "] Generating theme for " + image + "...")
+		
+			with open(template) as template_file:
+				filedata = template_file.read()
 
-			# Applies values to the templates and concats into single theme file	
-			for template in templates:
-				template_path = os.path.join(template_dir, template)
-				out_file = os.path.join(theme_dir, md5_hash + '-' + template[:-5])
-				with open(template_path) as file:
-					filedata = file.read()
+				# Change placeholder values
+				filedata = filedata.replace("[wallpaper]", str(image))
+				for i in range(len(colors)):
+					filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
 
-					# Change placeholder values
-					for i in range(len(colors)):
-						filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
-					filedata = filedata.replace("[background]", str(colors[0]))
-					filedata = filedata.replace("[background_light]", str(colors[8]))
-					filedata = filedata.replace("[foreground]", str(colors[15]))
-					filedata = filedata.replace("[foreground_dark]", str(colors[7]))
+				if os.path.isfile(out_file):
+					open(os.path.expanduser(out_file), 'w').close()
+				with open(os.path.expanduser(out_file), 'a') as file:
+					file.write(filedata)
 
-					if os.path.isfile(out_file):
-						open(os.path.expanduser(out_file), 'w').close()
-					with open(os.path.expanduser(out_file), 'a') as file:
-						file.write(filedata)
 	else:
 		logger.info("No themes to generate.")
 
-def update(image, out_dir, post_scripts=False):
+def update(image, out_dir, template_dir, post_scripts=False):
 	"""
 	Updates the theme to the parsed image
 
@@ -95,28 +92,43 @@ def update(image, out_dir, post_scripts=False):
 	# Get the md5 hash of the image
 	md5_hash = utils.md5_file(image)[:20]
 
-	theme_files = [f for f in os.listdir(theme_dir)
-		if re.match(r'^' + md5_hash + r'-', f)]
-
-	# If the theme doesn't exist, generate it
-	if len(theme_files) == 0:
+	if not os.path.isfile(os.path.join(theme_dir, md5_hash+".json")):
 		raise noPreGenThemeError("Theme file for this image does not exist!")
 
-	for theme in theme_files:
-		theme_type = theme[21:]
-		symlink_path = os.path.join(out_dir, theme_type)
+	with open(os.path.join(theme_dir, md5_hash + ".json")) as json_data:
+		theme_data = json.load(json_data)
 
-		if os.path.isfile(symlink_path):
-			os.remove(symlink_path)
+	colors = theme_data['colors']
+	wallpaper = theme_data['wallpaper']
 
-		os.symlink(os.path.join(theme_dir, theme), symlink_path)
+	templates = get_template_files(template_dir)
+
+	# Applies values to the templates and concats into single theme file	
+	for template in templates:
+		template_path = os.path.join(template_dir, template)
+		out_file = os.path.join(out_dir, template[:-5])
+		with open(template_path) as template_file:
+			filedata = template_file.read()
+
+			# Change placeholder values
+			for i in range(16):
+				filedata = filedata.replace("[color" + str(i) + "]", str(colors['color'+str(i)]))
+
+			filedata = filedata.replace("[background]", str(colors['color0']))
+			filedata = filedata.replace("[background_light]", str(colors['color8']))
+			filedata = filedata.replace("[foreground]", str(colors['color15']))
+			filedata = filedata.replace("[foreground_dark]", str(colors['color7']))
+
+			if os.path.isfile(out_file):
+				open(os.path.expanduser(out_file), 'w').close()
+			with open(os.path.expanduser(out_file), 'a') as file:
+				file.write(filedata)
 
 	# Link wallpaper to cache folder
 	image_symlink = os.path.join(out_dir, 'image')
 	if os.path.isfile(image_symlink):
 		os.remove(image_symlink)
-	os.symlink(image, image_symlink)
-
+	os.symlink(wallpaper, image_symlink)
 
 	# Run external scripts
 	if post_scripts:

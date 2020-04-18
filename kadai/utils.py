@@ -61,7 +61,7 @@ def get_dir_imgs(img_dir):
 		img_dir (str) -- the directory where the images are stored
 	"""
 	file_types = ("png", "jpg", "jpeg")
-	return [os.path.join(img_dir, img.name) for img in os.scandir(img_dir)
+	return [get_image(os.path.join(img_dir, img.name)) for img in os.scandir(img_dir)
 			if img.name.lower().endswith(file_types) and check_if_image(os.path.join(img_dir, img.name))]
 
 def get_image_list(image_path):
