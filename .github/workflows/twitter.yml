@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - id: log
-        run: echo "::set-env name=POST_COMMIT_MESSAGE::$(git log --no-merges -1 --pretty='%h: %B')"
+        run: echo "::set-env name=POST_COMMIT_MESSAGE::$(git log --no-merges -1 --pretty='%h %B')"
       - uses: ethomson/send-tweet-action@v1
         with:
           status: "New checkout to https://github.com/slapelachie/kadai \n: ${{ env.POST_COMMIT_MESSAGE }}"
