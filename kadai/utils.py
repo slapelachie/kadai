@@ -4,7 +4,7 @@ import re
 import subprocess
 from PIL import Image
 
-from .settings import CONFIG_PATH
+from kadai.settings import CONFIG_PATH
 
 def md5(string):
 	"""

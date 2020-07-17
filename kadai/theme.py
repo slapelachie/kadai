@@ -5,9 +5,9 @@ import tqdm
 import re
 import json
 
-from . import colorgen
-from . import utils, log
-from .settings import DEBUG_MODE
+from kadai import colorgen
+from kadai import utils, log
+from kadai.settings import DEBUG_MODE
 
 class noPreGenThemeError(Exception):
 	pass
