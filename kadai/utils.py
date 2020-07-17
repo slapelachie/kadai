@@ -4,7 +4,7 @@ import re
 import subprocess
 from PIL import Image
 
-from .settings import DATA_PATH
+from .settings import CONFIG_PATH
 
 def md5(string):
 	"""
@@ -81,7 +81,7 @@ def get_image_list(image_path):
 		raise ValueError("Unknown file type!")
 
 
-def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):
+def get_post_scripts(post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):
 	try:
 		os.makedirs(post_scripts_dir, exist_ok=True)
 	except:
@@ -93,7 +93,7 @@ def get_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):
 	scripts.sort()
 	return scripts
 
-def run_post_scripts(post_scripts_dir=os.path.join(DATA_PATH, 'postscripts')):		
+def run_post_scripts(post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):		
 	scripts = get_post_scripts(post_scripts_dir)
 
 	for script in scripts:

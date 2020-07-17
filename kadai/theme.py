@@ -7,7 +7,7 @@ import json
 
 from . import colorgen
 from . import utils, log
-from .settings import CACHE_PATH, DATA_PATH, DEBUG_MODE
+from .settings import DEBUG_MODE
 
 class noPreGenThemeError(Exception):
 	pass

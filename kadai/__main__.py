@@ -26,7 +26,7 @@ def get_args():
 
 	arg.add_argument('-q', action='store_true',
 		help='Allow only error logging')
-		
+
 	arg.add_argument("-g", action="store_true",
 		help="generate themes")
 	
@@ -65,7 +65,7 @@ def parse_args(parser):
 
 	if args.i:
 		if args.g:
-			theme.generate(args.i, CACHE_PATH, args.override)
+			theme.generate(args.i, DATA_PATH, args.override)
 			sys.exit(0)
 		else:
 			images = utils.get_image_list(args.i)
@@ -74,19 +74,19 @@ def parse_args(parser):
 
 			# If the theme file does not exist generate it and then update to it
 			try:
-				theme.update(image, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'),
+				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			except theme.noPreGenThemeError:
-				theme.generate(image, CACHE_PATH, args.override)
-				theme.update(image, CACHE_PATH, os.path.join(DATA_PATH, 'templates/'),
+				theme.generate(image, DATA_PATH, args.override)
+				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			sys.exit(0)
 	elif args.p:
 		# Check if the cached image exists, if it does update to that
-		last_image = os.path.join(CACHE_PATH, "image")
+		last_image = os.path.join(DATA_PATH, "image")
 		if(utils.check_if_image(last_image)):
-			theme.update(last_image, CACHE_PATH,
-				os.path.join(DATA_PATH, 'templates/'), post_scripts=True)
+			theme.update(last_image, DATA_PATH,
+				os.path.join(CONFIG_PATH, 'templates/'), post_scripts=True)
 		else:
 			logger.critical("Last image invalid or does not exist!")
 			sys.exit(1)
@@ -95,7 +95,7 @@ def parse_args(parser):
 		clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
 		if(clear == "y"):
 			try:
-				shutil.rmtree(CACHE_PATH)
+				shutil.rmtree(DATA_PATH)
 			except:
 				raise
 			logger.info("Cleared KADAI cache folders")
