@@ -39,3 +39,22 @@ def changeHsvHue(color, hue):
 
 def changeHsvSaturation(color, saturation):
     return (color[0], saturation, color[2])
+
+def changeHueFromRGB(color, hue):
+	hsv_color = rgb_to_hsv(color)
+	hsv_color = (hue, hsv_color[1], hsv_color[2])
+	return hsv_to_rgb(hsv_color)
+
+def changeValueFromRGB(color, value):
+	hsv_color = rgb_to_hsv(color)
+	hsv_color = (hsv_color[0], hsv_color[1], value)
+	return hsv_to_rgb(hsv_color)
+
+def changeSaturationFromRGB(color, saturation):
+	hsv_color = rgb_to_hsv(color)
+	hsv_color = (hsv_color[0], saturation, hsv_color[2])
+	return hsv_to_rgb(hsv_color)
+
+def getHueFromRGB(color):
+	hsv_color = rgb_to_hsv(color)
+	return hsv_color[0]

@@ -11,7 +11,7 @@ import logging
 import sys
 from PIL import Image
 
-from kadai.engine.vibrance import VibranceEngine
+from kadai.engine import VibranceEngine, HueBasedEngine
 
 inputfile = ''
 argv=sys.argv[1:]
@@ -29,5 +29,5 @@ def generate(image):
 	image_out = img.resize((150,75), Image.NEAREST).convert('RGB')
 	image_out.save("/tmp/tmp.png")
 	# Generate the pallete based on the small img
-	vibranceEngine = VibranceEngine('/tmp/tmp.png')
-	return vibranceEngine.generate()
+	engine = HueBasedEngine('/tmp/tmp.png')
+	return engine.generate()

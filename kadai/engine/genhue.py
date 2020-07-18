@@ -17,28 +17,62 @@ class HueBasedEngine():
         colors = []
 
         # Generate Dark Color Pallete
-        colors.extend(createXorgPallete(self.color, 0.5))
-        # Generate Light Color Pallete
         colors.extend(createXorgPallete(self.color, 0.7))
+        # Generate Light Color Pallete
+        colors.extend(createXorgPallete(self.color, 0.9))
 
-        return colors
+        return [ ColorUtils.rgb_to_hex(color) for color in colors ]
 
 def createXorgPallete(color, value):
-    pallete = []
+    distance = getMinDistanceFromHues(color)
+    base_colors = shiftHuesByDistance(generateBaseColors(color, value), distance)
+    # Change Dark Color (color0)
+    base_colors[0] = ColorUtils.changeHueFromRGB(base_colors[0], ColorUtils.getHueFromRGB(color))
+    base_colors[0] = ColorUtils.changeValueFromRGB(base_colors[0], 0.1*value)
+    # Change Light Color (color7)
+    base_colors[7] = ColorUtils.changeHueFromRGB(base_colors[7], ColorUtils.getHueFromRGB(color))
+    base_colors[7] = ColorUtils.changeSaturationFromRGB(base_colors[7], 0.02)
+
+    return base_colors
+
+def generateBaseColors(color, value):
+    new_colors = []
     for i in range(len(color_hues)):
-        hsv_color = ColorUtils.changeHsvValue(ColorUtils.changeHsvHue(ColorUtils.rgb_to_hsv(color), float(color_hues[i]/360)), value)
+        hsv_color = ColorUtils.rgb_to_hsv(color)
+        hsv_color = ColorUtils.changeHsvHue(hsv_color, float(color_hues[i]/360))
+        hsv_color = ColorUtils.changeHsvValue(hsv_color, value)
         if hsv_color[1] < 0.4:
             hsv_color = ColorUtils.changeHsvSaturation(hsv_color, 0.4)
-        if i == 0:
-            hsv_color = ColorUtils.changeHsvHue(hsv_color, color[0])
-            hsv_color = ColorUtils.changeHsvValue(hsv_color, 0.24*value)
-        elif i == (len(color_hues)-1):
-            hsv_color = ColorUtils.changeHsvHue(hsv_color, color[0])
-            hsv_color = ColorUtils.changeHsvSaturation(hsv_color, 0.02)
-        pallete.append(ColorUtils.hsv_to_rgb(hsv_color))
-    return pallete
+        new_colors.append(ColorUtils.hsv_to_rgb(hsv_color))
+    return new_colors
+
 
 def getDominantColorFromImage(image_path):
     color_cmd = ColorThief(image_path).get_palette
     raw_colors = color_cmd(color_count=2, quality=3)
     return ColorUtils.hsv_to_rgb(ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.7))
+
+def shiftHuesByDistance(colors, distance):
+    new_colors = []
+    for color in colors:
+        hsv_color = ColorUtils.rgb_to_hsv(color)
+        new_hue = hsv_color[0] + distance
+        if new_hue >= 1:
+            new_hue = new_hue-1
+        elif new_hue < 0 :
+            new_hue = new_hue+1
+        new_colors.append(ColorUtils.changeHueFromRGB(color, new_hue))
+    return new_colors
+
+def getMinDistanceFromHues(color):
+    distances = []
+    distances_positive = []
+    for color_hue in color_hues:
+        hsv_color = ColorUtils.rgb_to_hsv(color)
+
+        distance = color_hue - (hsv_color[0]*360)
+        distances.append(distance)
+        distances_positive.append(abs(distance))
+    
+    min_distance_pos = distances_positive.index(min(distances_positive))
+    return (distances[min_distance_pos]/360)
