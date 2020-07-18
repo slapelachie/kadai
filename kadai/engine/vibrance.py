@@ -71,9 +71,9 @@ def adjust_colors(cols):
 	for i in range(len(colors)):
 		color = colors[i]
 		if i <= 7:
-			color = change_value(color, 0.6)
+			color = ColorUtils.changeValueFromRGB(color, 0.6)
 		else: 
-			color = change_value(color, 0.8)
+			color = ColorUtils.changeValueFromRGB(color, 0.8)
 
 		colors[i] = color
 
@@ -92,33 +92,6 @@ def sort_colors(colors):
 	top_vibrant = sorted_colors[:8]
 	return sort_to_list(top_vibrant, colors)
 
-
-def change_value(color, value):
-	"""
-	Changes the value (in hsv) to the parsed argument
-
-	Arguments:
-		color (tuple (size:3)) a rgb color
-		value (int) the value of the new color (accepts from 0 to 1 (e.g. 0.53))
-	"""
-
-	color_hsv = list(ColorUtils.rgb_to_hsv(color))
-	color_hsv[2] = value
-	return ColorUtils.hsv_to_rgb(color_hsv)
-
-def change_saturation(color, saturation):
-	"""
-	Changes the value (in hsv) to the parsed argument
-
-	Arguments:
-		color (tuple (size:3)) a rgb color
-		saturation (int) the saturation of the new color (accepts from 0 to 1 (e.g. 0.53))
-	"""
-
-	color_hsv = list(ColorUtils.rgb_to_hsv(color))
-	color_hsv[1] = saturation
-	return ColorUtils.hsv_to_rgb(color_hsv)
-
 def set_bg_fg(colors, brightness):
 	"""
 	Modifys the background and foreground colors based on the brightness
@@ -132,14 +105,14 @@ def set_bg_fg(colors, brightness):
 	scaled_brightness = float(brightness/(17*255))
 	colors[8] = colors[7] = colors[15] = colors[0]
 
-	colors[0] = change_value(colors[0], scaled_brightness)
-	colors[8] = change_value(colors[8], .6 + scaled_brightness)
+	colors[0] = ColorUtils.changeValueFromRGB(colors[0], scaled_brightness)
+	colors[8] = ColorUtils.changeValueFromRGB(colors[8], .6 + scaled_brightness)
 
-	colors[7] = change_saturation(
-		change_value(colors[7], .85 + scaled_brightness),
+	colors[7] = ColorUtils.changeSaturationFromRGB(
+		ColorUtils.changeValueFromRGB(colors[7], .85 + scaled_brightness),
 		0.1)
-	colors[15] = change_saturation(
-		change_value(colors[15], min(.95 + scaled_brightness, 1)),
+	colors[15] = ColorUtils.changeSaturationFromRGB(
+		ColorUtils.changeValueFromRGB(colors[15], min(.95 + scaled_brightness, 1)),
 		0.1)
 
 	return colors

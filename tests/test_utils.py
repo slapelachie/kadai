@@ -1,34 +1,75 @@
 import unittest
-from kadai import utils
+from kadai.utils import FileUtils,ColorUtils
 
-class TestUtils(unittest.TestCase):
+class TestFileUtils(unittest.TestCase):
 	def test_md5_string(self):
-		md5 = utils.md5('test string')
+		md5 = FileUtils.md5('test string')
 		self.assertEqual(md5, '6f8db599de986fab7a21625b7916589c')
 
 	def test_md5_file(self):
-		file_md5 = utils.md5_file('tests/assets/test.jpg')
+		file_md5 = FileUtils.md5_file('tests/assets/test.jpg')
 		self.assertEqual(file_md5, '31084f2c8577234aeb5563b95a2786a8')
 
 	def test_check_if_image(self):
-		self.assertTrue(utils.check_if_image('tests/assets/test.jpg'))
-		self.assertFalse(utils.check_if_image('tests/assets/test.txt'))
+		self.assertTrue(FileUtils.check_if_image('tests/assets/test.jpg'))
+		self.assertFalse(FileUtils.check_if_image('tests/assets/test.txt'))
 
 	def test_get_dir_images(self):
-		images = utils.get_dir_imgs('tests/assets/')
+		images = FileUtils.get_dir_imgs('tests/assets/')
 		self.assertEqual(len(images), 1)	
 
 	def test_get_image_list_one(self):
-		images = utils.get_image_list('tests/assets/test.jpg')
+		images = FileUtils.get_image_list('tests/assets/test.jpg')
 		self.assertEqual(len(images), 1)
 	
 	def test_get_image_list_all(self):
-		images = utils.get_image_list('tests/assets/')
+		images = FileUtils.get_image_list('tests/assets/')
 		self.assertEqual(len(images), 1)
 
 	def test_get_postscripts(self):
-		scripts = utils.get_post_scripts(post_scripts_dir='tests/assets/postscripts/')
+		scripts = FileUtils.get_post_scripts(post_scripts_dir='tests/assets/postscripts/')
 		self.assertEqual(len(scripts), 1)
+
+class TestColorUtils(unittest.TestCase):
+	def test_rgb_to_hex(self):
+		hex = ColorUtils.rgb_to_hex((255,0,0))
+		self.assertEqual(hex, "#ff0000")
+
+	def test_rgb_to_hsv(self):
+		hsv = ColorUtils.rgb_to_hsv((255,0,0))
+		self.assertEqual(hsv, (0,1,1))
+
+	def test_hsv_to_rgb(self):
+		rgb = ColorUtils.hsv_to_rgb((0,1,1))
+		self.assertEqual(rgb, (255,0,0))
+
+	def test_changeHsvValue(self):
+		hsv = ColorUtils.changeHsvValue((0,1,1), 0.5)
+		self.assertEqual(hsv, (0,1,0.5))
+
+	def test_changeHsvHue(self):
+		hsv = ColorUtils.changeHsvHue((0,1,1), 0.5)
+		self.assertEqual(hsv, (0.5,1,1))
+
+	def test_changeHsvSaturation(self):
+		hsv = ColorUtils.changeHsvSaturation((0,1,1), 0.5)
+		self.assertEqual(hsv, (0,0.5,1))
+
+	def test_changeHueFromRGB(self):
+		rgb = ColorUtils.changeHueFromRGB((255,0,0), 0.5)
+		self.assertEqual(rgb, (0, 255, 255))
+
+	def test_changeValueFromRGB(self):
+		rgb = ColorUtils.changeValueFromRGB((255,0,0), 0.5)
+		self.assertEqual(rgb, (127,0,0))
+
+	def test_changeSaturationFromRGB(self):
+		rgb = ColorUtils.changeSaturationFromRGB((255,0,0), 0.5)
+		self.assertEqual(rgb, (255,127,127))
+
+	def test_getHueFromRGB(self):
+		hue = ColorUtils.getHueFromRGB((255,0,0))
+		self.assertEqual(hue, 0)
 
 if __name__ == "__main__":
 	unittest.main()

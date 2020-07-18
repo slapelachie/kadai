@@ -27,7 +27,7 @@ def generate(image):
 	# Resize the image so color processing is quicker
 	img = Image.open(image)
 	image_out = img.resize((150,75), Image.NEAREST).convert('RGB')
-	image_out.save("/tmp/tmp.png")
+	image_out.save("/tmp/kadai-tmp.png")
 	# Generate the pallete based on the small img
-	engine = HueBasedEngine('/tmp/tmp.png')
+	engine = HueBasedEngine('/tmp/kadai-tmp.png')
 	return engine.generate()

@@ -29,7 +29,7 @@ def hsv_to_rgb(color):
 	"""
 
 	color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
-	return [int(col*255) for col in color_rgb]
+	return tuple([int(col*255) for col in color_rgb])
 
 def changeHsvValue(color, value):
     return (color[0], color[1], value)
