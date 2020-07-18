@@ -19,7 +19,7 @@ setup(name='KADAI',
 	author='slapelachie',
 	author_email='slapelachie@gmail.com',
 	license='GPLv2',
-	packages=['kadai', 'kadai.engine'],
+	packages=['kadai', 'kadai.engine', 'kadai.utils'],
 	entry_points={"console_scripts": ["kadai=kadai.__main__:main"]},
 	include_package_data=True,
 	install_requires = [

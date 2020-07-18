@@ -1,13 +1,14 @@
-import colorsys
 import math
 import sys
 from PIL import Image,ImageStat
 from colorthief import ColorThief
 
+from kadai.utils import ColorUtils
+
 class VibranceEngine():
-    def __init__(self, image):
-        self.raw_colors = gen_colors(image)
-        self.image = image
+    def __init__(self, image_path):
+        self.raw_colors = gen_colors(image_path)
+        self.image_path = image_path
     
     def generate(self):
         """
@@ -16,41 +17,9 @@ class VibranceEngine():
         Arguments:
             img (str) -- location of the image
         """
-        brightness = int(get_image_brightness(self.image))
+        brightness = int(get_image_brightness(self.image_path))
         new_cols = adjust_colors(sort_colors(self.raw_colors))
-        return [rgb_to_hex(color) for color in set_bg_fg(new_cols, brightness)]
-
-
-def rgb_to_hex(color):
-	"""
-	Convert an rgb color to hex.
-
-	Arguments:
-		color (list) -- list of red, green, and blue for a color [r, g, b]
-	"""
-
-	return "#%02x%02x%02x" % (*color,)
-
-def rgb_to_hsv(color):
-	"""
-	Converts from rgb to hsv
-
-	Arguments:
-		color (list) -- list of red, green, and blue for a color [r, g, b]
-	"""
-	new_cols = list(colorsys.rgb_to_hsv(*[float(x/255) for x in color]))
-	return tuple(new_cols)
-
-def hsv_to_rgb(color):
-	"""
-	Converts from hsv to rgb
-
-	Arguments:
-		color (list) -- list of hue, saturation, and value for a color [h, s, v]
-	"""
-
-	color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
-	return [int(col*255) for col in color_rgb]
+        return [ColorUtils.rgb_to_hex(color) for color in set_bg_fg(new_cols, brightness)]
 
 def get_image_brightness(im_file):
 	im = Image.open(im_file)
@@ -70,7 +39,7 @@ def sort_by_vibrance(colors):
 
 	# Calculate the vibrance of the image
 	for i in range(len(colors)):
-		hsv_color = [*rgb_to_hsv(colors[i])]
+		hsv_color = [*ColorUtils.rgb_to_hsv(colors[i])]
 		ideal_brightness=1
 
 		# Basically the closer the brightness is to the ideal brightness and
@@ -133,9 +102,9 @@ def change_value(color, value):
 		value (int) the value of the new color (accepts from 0 to 1 (e.g. 0.53))
 	"""
 
-	color_hsv = list(rgb_to_hsv(color))
+	color_hsv = list(ColorUtils.rgb_to_hsv(color))
 	color_hsv[2] = value
-	return hsv_to_rgb(color_hsv)
+	return ColorUtils.hsv_to_rgb(color_hsv)
 
 def change_saturation(color, saturation):
 	"""
@@ -146,9 +115,9 @@ def change_saturation(color, saturation):
 		saturation (int) the saturation of the new color (accepts from 0 to 1 (e.g. 0.53))
 	"""
 
-	color_hsv = list(rgb_to_hsv(color))
+	color_hsv = list(ColorUtils.rgb_to_hsv(color))
 	color_hsv[1] = saturation
-	return hsv_to_rgb(color_hsv)
+	return ColorUtils.hsv_to_rgb(color_hsv)
 
 def set_bg_fg(colors, brightness):
 	"""
@@ -175,7 +144,7 @@ def set_bg_fg(colors, brightness):
 
 	return colors
 
-def gen_colors(img):
+def gen_colors(image_path):
 	"""
 	Create a list of colors, max of 16 and min of 8
 	
@@ -183,7 +152,7 @@ def gen_colors(img):
 		img (str) -- location of the image
 	"""
 
-	color_cmd = ColorThief(img).get_palette
+	color_cmd = ColorThief(image_path).get_palette
 	raw_colors = color_cmd(color_count=16, quality=3)
 
 	if len(raw_colors) <= 8:

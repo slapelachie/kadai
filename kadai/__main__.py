@@ -12,7 +12,8 @@ import shutil
 import random
 
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
-from . import utils, log, theme
+from . import log, theme
+from kadai.utils import FileUtils
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -68,7 +69,7 @@ def parse_args(parser):
 			theme.generate(args.i, DATA_PATH, args.override)
 			sys.exit(0)
 		else:
-			images = utils.get_image_list(args.i)
+			images = FileUtils.get_image_list(args.i)
 			random.shuffle(images)
 			image = images[0]
 
@@ -84,7 +85,7 @@ def parse_args(parser):
 	elif args.p:
 		# Check if the cached image exists, if it does update to that
 		last_image = os.path.join(DATA_PATH, "image")
-		if(utils.check_if_image(last_image)):
+		if(FileUtils.check_if_image(last_image)):
 			theme.update(last_image, DATA_PATH,
 				os.path.join(CONFIG_PATH, 'templates/'), post_scripts=True)
 		else:

@@ -6,7 +6,8 @@ import re
 import json
 
 from kadai import colorgen
-from kadai import utils, log
+from kadai import log
+from kadai.utils import FileUtils
 from kadai.settings import DEBUG_MODE
 
 class noPreGenThemeError(Exception):
@@ -42,9 +43,9 @@ def generate(images_path, out_dir, override=False):
 	generate_images = []
 
 	theme_dir = os.path.join(out_dir, 'themes/')
-	utils.ensure_output_dir_exists(theme_dir)
+	FileUtils.ensure_output_dir_exists(theme_dir)
 
-	images = [[i, utils.md5_file(i)[:20]] for i in utils.get_image_list(images_path)]
+	images = [[i, FileUtils.md5_file(i)[:20]] for i in FileUtils.get_image_list(images_path)]
 	template = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 		"data/template.json")
 
@@ -87,10 +88,10 @@ def update(image, out_dir, template_dir, post_scripts=False):
 			default: False
 	"""
 	theme_dir = os.path.join(out_dir, 'themes/')
-	utils.ensure_output_dir_exists(theme_dir)
+	FileUtils.ensure_output_dir_exists(theme_dir)
 
 	# Get the md5 hash of the image
-	md5_hash = utils.md5_file(image)[:20]
+	md5_hash = FileUtils.md5_file(image)[:20]
 
 	if not os.path.isfile(os.path.join(theme_dir, md5_hash+".json")):
 		raise noPreGenThemeError("Theme file for this image does not exist!")
@@ -132,4 +133,4 @@ def update(image, out_dir, template_dir, post_scripts=False):
 
 	# Run external scripts
 	if post_scripts:
-		utils.run_post_scripts()
+		FileUtils.run_post_scripts()
