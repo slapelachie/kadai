@@ -8,7 +8,7 @@ from kadai.utils import ColorUtils
 # Match XColors
 color_hues = (240, 0, 120, 60, 240, 300, 180, 240)
 
-class HueBasedEngine():
+class HueEngine():
     def __init__(self, image):
         self.image = image
         self.color = getDominantColorFromImage(image)

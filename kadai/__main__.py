@@ -43,6 +43,9 @@ def get_args():
 	arg.add_argument("--clear", action="store_true",
 		help="Clear all data relating to KADAI")
 
+	arg.add_argument("--backend", metavar="name",
+		help="vibrance/hue")
+
 	return arg
 
 def parse_args(parser):
@@ -66,7 +69,7 @@ def parse_args(parser):
 
 	if args.i:
 		if args.g:
-			theme.generate(args.i, DATA_PATH, args.override)
+			theme.generate(args.i, DATA_PATH, args.override, args.backend)
 			sys.exit(0)
 		else:
 			images = FileUtils.get_image_list(args.i)
@@ -78,7 +81,7 @@ def parse_args(parser):
 				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			except theme.noPreGenThemeError:
-				theme.generate(image, DATA_PATH, args.override)
+				theme.generate(image, DATA_PATH, args.override, args.backend)
 				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			sys.exit(0)

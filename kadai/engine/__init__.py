@@ -1,2 +1,2 @@
 from kadai.engine.vibrance import VibranceEngine
-from kadai.engine.genhue import HueBasedEngine
+from kadai.engine.genhue import HueEngine

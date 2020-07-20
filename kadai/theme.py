@@ -38,8 +38,31 @@ def get_non_generated(images, theme_dir):
 
 	return non_gen_images
 
-def generate(images_path, out_dir, override=False):
+def clear_and_write_data_to_file(file_path, data):
+	if os.path.isfile(file_path):
+		open(os.path.expanduser(file_path), 'w').close()
+	with open(os.path.expanduser(file_path), 'a') as file:
+		file.write(data)
+
+def create_file_from_template(template_file, image_path, colors, out_path):
+	filedata = template_file.read()
+
+	# Change placeholder values
+	filedata = filedata.replace("[wallpaper]", image_path)
+	for i in range(len(colors)):
+		filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
+	
+	clear_and_write_data_to_file(out_path, filedata)
+
+def check_backend(backend):
+	if not backend:
+		return 'vibrance'
+	else:
+		return backend
+
+def generate(images_path, out_dir, override=False, backend='vibrance'):
 	""" Generates the theme passed on the parent class """
+	backend = check_backend(backend)
 	generate_images = []
 
 	theme_dir = os.path.join(out_dir, 'themes/')
@@ -59,23 +82,12 @@ def generate(images_path, out_dir, override=False):
 			out_file = os.path.join(theme_dir, md5_hash + '.json')
 		
 			# Generate the pallete
-			colors = colorgen.generate(image)
+			colors = colorgen.generate(image, backend)
 
 			tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(generate_images)) + "] Generating theme for " + image + "...")
 		
 			with open(template) as template_file:
-				filedata = template_file.read()
-
-				# Change placeholder values
-				filedata = filedata.replace("[wallpaper]", str(image))
-				for i in range(len(colors)):
-					filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
-
-				if os.path.isfile(out_file):
-					open(os.path.expanduser(out_file), 'w').close()
-				with open(os.path.expanduser(out_file), 'a') as file:
-					file.write(filedata)
-
+				create_file_from_template(template_file, str(image), colors, out_file)
 	else:
 		logger.info("No themes to generate.")
 
