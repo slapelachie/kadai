@@ -27,17 +27,17 @@ class TestVibranceEngine(unittest.TestCase):
 
 class TestHueEngine(unittest.TestCase):
 	def test_color_output_length(self):
-		result = genhue.HueBasedEngine("tests/assets/test.jpg").generate()
+		result = genhue.HueEngine("tests/assets/test.jpg").generate()
 		self.assertEqual(len(result), 16)
 
 	def test_color_hex(self):
-		result = genhue.HueBasedEngine("tests/assets/test.jpg").generate()
+		result = genhue.HueEngine("tests/assets/test.jpg").generate()
 		for color in result:
 			hex_string = color[1:]
 			int(hex_string, 16)
 	
 	def test_color_length(self):
-		result = genhue.HueBasedEngine("tests/assets/test.jpg").generate()
+		result = genhue.HueEngine("tests/assets/test.jpg").generate()
 		for color in result:
 			self.assertEqual(len(color), 7)
 

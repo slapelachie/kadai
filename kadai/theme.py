@@ -66,7 +66,7 @@ def generate(images_path, out_dir, override=False, backend='vibrance'):
 	generate_images = []
 
 	theme_dir = os.path.join(out_dir, 'themes/')
-	FileUtils.ensure_output_dir_exists(theme_dir)
+	FileUtils.ensure_dir_exists(theme_dir)
 
 	images = [[i, FileUtils.md5_file(i)[:20]] for i in FileUtils.get_image_list(images_path)]
 	template = os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -100,7 +100,7 @@ def update(image, out_dir, template_dir, post_scripts=False):
 			default: False
 	"""
 	theme_dir = os.path.join(out_dir, 'themes/')
-	FileUtils.ensure_output_dir_exists(theme_dir)
+	FileUtils.ensure_dir_exists(theme_dir)
 
 	# Get the md5 hash of the image
 	md5_hash = FileUtils.md5_file(image)[:20]

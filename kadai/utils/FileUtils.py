@@ -31,7 +31,7 @@ def md5_file(fname):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
 
-def ensure_output_dir_exists(directory):
+def ensure_dir_exists(directory):
 	try:
 		os.makedirs(directory, exist_ok=True)
 	except: raise

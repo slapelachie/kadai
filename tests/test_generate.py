@@ -2,6 +2,7 @@ import unittest
 import shutil
 import os
 from kadai import theme, utils
+from kadai.themer import ThemeGenerator
 
 out_dir = '/tmp/github-runner-kadai/'
 template_dir = 'tests/assets/templates'
@@ -15,7 +16,9 @@ class TestUtils(unittest.TestCase):
 	def test_generate_one(self):
 		# Testing for generating one theme
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
-		theme.generate('tests/assets/test.jpg', out_dir)
+		#theme.generate('tests/assets/test.jpg', out_dir)
+		generator = ThemeGenerator('tests/assets/test.jpg', out_dir)
+		generator.generate()
 
 		self.assertIs(os.path.isfile(os.path.join(out_dir,
 			'themes/31084f2c8577234aeb55.json')), True)
@@ -25,7 +28,9 @@ class TestUtils(unittest.TestCase):
 	def test_generate_all(self):
 		# Testing for generating all images into themes
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
-		theme.generate('tests/assets/', out_dir)
+		#theme.generate('tests/assets/', out_dir)
+		generator = ThemeGenerator('tests/assets/', out_dir)
+		generator.generate()
 
 		self.assertTrue(os.path.isfile(os.path.join(out_dir,
 			'themes/31084f2c8577234aeb55.json')))

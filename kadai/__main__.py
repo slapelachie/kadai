@@ -14,6 +14,7 @@ import random
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from . import log, theme
 from kadai.utils import FileUtils
+from kadai.themer import ThemeGenerator
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -69,7 +70,11 @@ def parse_args(parser):
 
 	if args.i:
 		if args.g:
-			theme.generate(args.i, DATA_PATH, args.override, args.backend)
+			#theme.generate(args.i, DATA_PATH, args.override, args.backend)
+			generator = ThemeGenerator(args.i, DATA_PATH)
+			generator.setEngine(args.backend)
+			generator.setOverride(args.override)
+			generator.generate()
 			sys.exit(0)
 		else:
 			images = FileUtils.get_image_list(args.i)
@@ -81,7 +86,11 @@ def parse_args(parser):
 				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			except theme.noPreGenThemeError:
-				theme.generate(image, DATA_PATH, args.override, args.backend)
+				generator = ThemeGenerator(args.i, DATA_PATH)
+				generator.setEngine(args.backend)
+				generator.setOverride(args.override)
+				generator.generate()
+
 				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
 					post_scripts=True)
 			sys.exit(0)

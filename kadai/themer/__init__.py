@@ -1,0 +1,1 @@
+from kadai.themer.generate import ThemeGenerator
