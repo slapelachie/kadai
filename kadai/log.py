@@ -6,6 +6,8 @@ default_format = ("[%(levelname)s\033[0m] "
 	"\033[1;31m%(module)s\033[0m: "
 	"%(message)s")
 
+bar_format='{percentage:3.0f}% {n}/{total}'
+
 class TqdmLoggingHandler(logging.Handler):
 	def __init__(self, level=logging.NOTSET):
 		super().__init__(level)

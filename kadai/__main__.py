@@ -11,12 +11,12 @@ import logging
 import shutil
 import random
 
-from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
-from . import log, theme
+from kadai import log
+from kadai.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from kadai.utils import FileUtils
 from kadai.themer import Themer
 
-logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
+logger = log.setup_logger(__name__, logging.WARNING, log.defaultLoggingHandler())
 
 def get_args():
 	""" Get the args parsed from the command line and does arg handling stuff """
@@ -47,6 +47,9 @@ def get_args():
 	arg.add_argument("--backend", metavar="name",
 		help="vibrance/hue")
 
+	arg.add_argument("--progress", action="store_true",
+		help="Show progress of theme generation")
+
 	return arg
 
 def parse_args(parser):
@@ -72,6 +75,7 @@ def parse_args(parser):
 		themer = Themer(args.i, DATA_PATH)
 		themer.setEngine(args.backend)
 		themer.setOverride(args.override)
+		themer.disableProgress(False if args.progress else True)
 
 		if args.g:
 			themer.generate()

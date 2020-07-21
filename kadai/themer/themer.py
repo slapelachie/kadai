@@ -10,8 +10,8 @@ from kadai.utils import FileUtils
 from kadai.settings import CONFIG_PATH
 from kadai import log
 
-logger = log.setup_logger(__name__+'.default', logging.INFO, log.defaultLoggingHandler())
-tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.INFO, log.TqdmLoggingHandler())
+logger = log.setup_logger(__name__+'.default', logging.WARNING, log.defaultLoggingHandler())
+tqdm_logger = log.setup_logger(__name__+'.tqdm', logging.WARNING, log.TqdmLoggingHandler())
 
 class Themer():
     def __init__(self, image_path, out_path):
@@ -25,6 +25,7 @@ class Themer():
         self.template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
             "../data/template.json")
         self.user_templates_path = os.path.join(CONFIG_PATH, 'templates/')
+        self.disable_progress = True
 
         FileUtils.ensure_dir_exists(self.theme_out_path)
 
@@ -46,6 +47,9 @@ class Themer():
     
     def setRunPostScripts(self, condition):
         self.run_post_scripts = condition
+
+    def disableProgress(self, condition):
+        self.disable_progress = condition
     
     def generate(self):
         tmp_file = "/tmp/kadai-tmp.png"
@@ -54,7 +58,7 @@ class Themer():
         unprocessed_images = image_path_md5 if self.override else get_non_generated(image_path_md5, self.theme_out_path)
 
         if len(unprocessed_images) > 0:
-            for i in tqdm.tqdm(range(len(unprocessed_images))):
+            for i in tqdm.tqdm(range(len(unprocessed_images)), bar_format=log.bar_format, disable=self.disable_progress):
                 image = unprocessed_images[i][0]
                 md5_hash = unprocessed_images[i][1]
                 out_file = os.path.join(self.theme_out_path, md5_hash + '.json')
