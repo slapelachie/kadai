@@ -79,15 +79,10 @@ def parse_args(parser):
 		else:
 			# If the theme file does not exist generate it and then update to it
 			try:
-				#theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
-				#	post_scripts=True)
 				themer.update()
 			except FileUtils.noPreGenThemeError:
 				themer.generate()
 				themer.update()
-
-				#theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
-				#	post_scripts=True)
 			sys.exit(0)
 	elif args.p:
 		# Check if the cached image exists, if it does update to that
@@ -95,8 +90,6 @@ def parse_args(parser):
 		if(FileUtils.check_if_image(last_image)):
 			themer = Themer(last_image, DATA_PATH)
 			themer.update()
-			#theme.update(last_image, DATA_PATH,
-			#	os.path.join(CONFIG_PATH, 'templates/'), post_scripts=True)
 		else:
 			logger.critical("Last image invalid or does not exist!")
 			sys.exit(1)

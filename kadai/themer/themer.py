@@ -160,16 +160,16 @@ def create_tmp_image(image, path):
     image_out.save(path)
 
 def modifyFiledataWithTemplate(filedata, colors):
-        # Change placeholder values
-        for i in range(len(colors)):
-            filedata = filedata.replace("[color" + str(i) + "]", str(colors['color'+str(i)]))
+    # Change placeholder values
+    for i in range(len(colors)):
+        filedata = filedata.replace("[color" + str(i) + "]", str(colors['color'+str(i)]))
 
-        filedata = filedata.replace("[background]", str(colors['color0']))
-        filedata = filedata.replace("[background_light]", str(colors['color8']))
-        filedata = filedata.replace("[foreground]", str(colors['color15']))
-        filedata = filedata.replace("[foreground_dark]", str(colors['color7']))
+    filedata = filedata.replace("[background]", str(colors['color0']))
+    filedata = filedata.replace("[background_light]", str(colors['color8']))
+    filedata = filedata.replace("[foreground]", str(colors['color15']))
+    filedata = filedata.replace("[foreground_dark]", str(colors['color7']))
 
-        return filedata
+    return filedata
 
 def linkWallpaperToFolder(wallpaper, file_path):
     image_symlink = os.path.join(file_path, 'image')
