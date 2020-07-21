@@ -1,1 +1,1 @@
-from kadai.themer.generate import ThemeGenerator
+from kadai.themer.themer import Themer

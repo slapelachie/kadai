@@ -14,7 +14,7 @@ import random
 from .settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from . import log, theme
 from kadai.utils import FileUtils
-from kadai.themer import ThemeGenerator
+from kadai.themer import Themer
 
 logger = log.setup_logger(__name__, logging.INFO, log.defaultLoggingHandler())
 
@@ -69,37 +69,34 @@ def parse_args(parser):
 		pass
 
 	if args.i:
+		themer = Themer(args.i, DATA_PATH)
+		themer.setEngine(args.backend)
+		themer.setOverride(args.override)
+
 		if args.g:
-			#theme.generate(args.i, DATA_PATH, args.override, args.backend)
-			generator = ThemeGenerator(args.i, DATA_PATH)
-			generator.setEngine(args.backend)
-			generator.setOverride(args.override)
-			generator.generate()
+			themer.generate()
 			sys.exit(0)
 		else:
-			images = FileUtils.get_image_list(args.i)
-			random.shuffle(images)
-			image = images[0]
-
 			# If the theme file does not exist generate it and then update to it
 			try:
-				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
-					post_scripts=True)
-			except theme.noPreGenThemeError:
-				generator = ThemeGenerator(args.i, DATA_PATH)
-				generator.setEngine(args.backend)
-				generator.setOverride(args.override)
-				generator.generate()
+				#theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
+				#	post_scripts=True)
+				themer.update()
+			except FileUtils.noPreGenThemeError:
+				themer.generate()
+				themer.update()
 
-				theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
-					post_scripts=True)
+				#theme.update(image, DATA_PATH, os.path.join(CONFIG_PATH, 'templates/'),
+				#	post_scripts=True)
 			sys.exit(0)
 	elif args.p:
 		# Check if the cached image exists, if it does update to that
 		last_image = os.path.join(DATA_PATH, "image")
 		if(FileUtils.check_if_image(last_image)):
-			theme.update(last_image, DATA_PATH,
-				os.path.join(CONFIG_PATH, 'templates/'), post_scripts=True)
+			themer = Themer(last_image, DATA_PATH)
+			themer.update()
+			#theme.update(last_image, DATA_PATH,
+			#	os.path.join(CONFIG_PATH, 'templates/'), post_scripts=True)
 		else:
 			logger.critical("Last image invalid or does not exist!")
 			sys.exit(1)

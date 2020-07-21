@@ -6,6 +6,9 @@ from PIL import Image
 
 from kadai.settings import CONFIG_PATH
 
+class noPreGenThemeError(Exception):
+    pass
+
 def md5(string):
 	"""
 	Generates a md5 hash based on the parsed string
