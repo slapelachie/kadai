@@ -1,15 +1,19 @@
 import math
 import sys
+import logging
 from PIL import Image,ImageStat
 from colorthief import ColorThief
 
+from kadai import log
 from kadai.utils import ColorUtils
+
+logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
 
 class VibranceEngine():
     def __init__(self, image_path):
         self.raw_colors = gen_colors(image_path)
         self.image_path = image_path
-    
+
     def generate(self):
         """
         Generate the palette. Returns a list of hexidecimal colors
@@ -128,8 +132,8 @@ def gen_colors(image_path):
 	color_cmd = ColorThief(image_path).get_palette
 	raw_colors = color_cmd(color_count=16, quality=3)
 
-	if len(raw_colors) <= 8:
-		print("ColorThief couldn't generate a suitable palette.")
-		sys.exit(1)
+	if len(raw_colors) <= 8:		
+		logger.warn("ColorThief couldn't generate a suitable pallete")
+		return None
 
 	return raw_colors

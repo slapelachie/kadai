@@ -2,7 +2,7 @@ import unittest
 import shutil
 import os
 from kadai.utils import FileUtils
-from kadai.themer import themer
+from kadai import themer
 
 out_dir = '/tmp/github-runner-kadai/'
 template_dir = 'tests/assets/templates'

@@ -16,7 +16,7 @@ from kadai.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from kadai.utils import FileUtils
 from kadai.themer import Themer
 
-logger = log.setup_logger(__name__, logging.WARNING, log.defaultLoggingHandler())
+logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
 
 def get_args():
     """ Get the args parsed from the command line and does arg handling stuff """
@@ -72,9 +72,6 @@ def parse_args(parser):
     engine_type = config_handler.compareFlagWithConfig(args.backend, config_handler.parse_config()['engine'])
     show_progress = config_handler.compareFlagWithConfig(args.progress, config_handler.parse_config()['progress'])
 
-    if args.q:
-        pass
-
     if args.warranty:
         print("""Copyright (C) 2020 slapelachie
 
@@ -125,7 +122,7 @@ GNU General Public License for more details.""")
                 raise
             logger.info("Cleared KADAI cache folders")
         else:
-            logger.warning("Canceled clearing cache folders...")
+            logger.info("Canceled clearing cache folders...")
     else:
         logger.critical("No file specified...")
         sys.exit(1)

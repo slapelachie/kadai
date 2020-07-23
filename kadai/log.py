@@ -36,7 +36,7 @@ class defaultLoggingHandler(logging.StreamHandler):
 		except:
 			self.handleError(record)	
 
-def setup_logger(name, level, handler):
+def setup_logger(name, handler, level=logging.WARNING):
 	""" Sets up the logger """	
 	logger = logging.getLogger(name)
 	logger.setLevel(level)
