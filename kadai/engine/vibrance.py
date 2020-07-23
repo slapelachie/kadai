@@ -35,24 +35,24 @@ def sort_by_vibrance(colors):
 		colors (list) -- list of rgb colors
 	"""
 
-	hsv_distance=[]
-
-	# Calculate the vibrance of the image
-	for i in range(len(colors)):
-		hsv_color = [*ColorUtils.rgb_to_hsv(colors[i])]
-		ideal_brightness=1
-
-		# Basically the closer the brightness is to the ideal brightness and
-		# the higher the saturation is the larger the output value
-
-		# Edit 20200413: I have no idea what I was on when I was limiting this,
-		# the max should be the greatest
-		vibrance=hsv_color[1]*(2+(1-((hsv_color[2]/ideal_brightness)+(ideal_brightness/hsv_color[2]))))
-
-		hsv_distance.append([colors[i], vibrance])
-
+	hsv_distance=calculateVibranceFromList(colors)
 	adj_colors = sorted(hsv_distance, key = lambda x:abs(x[1]-1))
 	return [i[0] for i in adj_colors]
+
+def calculateVibrance(color):
+	hsv_color = [*ColorUtils.rgb_to_hsv(color)]
+	ideal_brightness=1
+
+	# Basically the closer the brightness is to the ideal brightness and
+	# the higher the saturation is the larger the output value
+	return hsv_color[1]*(2+(1-((hsv_color[2]/ideal_brightness)+(ideal_brightness/hsv_color[2]))))	
+
+def calculateVibranceFromList(colors):
+	hsv_distance = []
+	for i in range(len(colors)):
+		vibrance = calculateVibrance(colors[i])
+		hsv_distance.append([colors[i], vibrance])
+	return hsv_distance
 
 def sort_to_list(colors, color_list):
 	return [i for i in color_list if i in colors]

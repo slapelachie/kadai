@@ -4,9 +4,10 @@ import tqdm
 import logging
 import json
 import random
+from colorthief import ColorThief
 from PIL import Image
 
-from kadai.utils import FileUtils
+from kadai.utils import FileUtils,ColorUtils
 from kadai.settings import CONFIG_PATH
 from kadai import log
 
@@ -92,6 +93,7 @@ class Themer():
             theme_data = json.load(json_data)
 
         colors = theme_data['colors']
+        primary_color = theme_data['primary']
         wallpaper = theme_data['wallpaper']
 
         templates = get_template_files(self.user_templates_path)
@@ -101,7 +103,7 @@ class Themer():
             out_file = os.path.join(self.out_path, template[:-5])
             with open(template_path) as template_file:
                 filedata = template_file.read()
-                filedata = modifyFiledataWithTemplate(filedata, colors)
+                filedata = modifyFiledataWithTemplate(filedata, colors, primary_color)
 
                 if os.path.isfile(out_file):
                     open(os.path.expanduser(out_file), 'w').close()
@@ -150,9 +152,11 @@ def clear_and_write_data_to_file(file_path, data):
 
 def create_file_from_template(template_file, image_path, colors, out_path):
     filedata = template_file.read()
+    domiant_color = getDominantColorFromImage(image_path)
 
     # Change placeholder values
     filedata = filedata.replace("[wallpaper]", image_path)
+    filedata = filedata.replace("[primary]", domiant_color)
     for i in range(len(colors)):
         filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
     
@@ -163,7 +167,7 @@ def create_tmp_image(image, path):
     image_out = img.resize((150,75), Image.NEAREST).convert('RGB')
     image_out.save(path)
 
-def modifyFiledataWithTemplate(filedata, colors):
+def modifyFiledataWithTemplate(filedata, colors, primary_color):
     # Change placeholder values
     for i in range(len(colors)):
         filedata = filedata.replace("[color" + str(i) + "]", str(colors['color'+str(i)]))
@@ -172,6 +176,7 @@ def modifyFiledataWithTemplate(filedata, colors):
     filedata = filedata.replace("[background_light]", str(colors['color8']))
     filedata = filedata.replace("[foreground]", str(colors['color15']))
     filedata = filedata.replace("[foreground_dark]", str(colors['color7']))
+    filedata = filedata.replace("[primary]", str(primary_color))
 
     return filedata
 
@@ -180,3 +185,10 @@ def linkWallpaperToFolder(wallpaper, file_path):
     if os.path.isfile(image_symlink):
         os.remove(image_symlink)
     os.symlink(wallpaper, image_symlink)
+
+def getDominantColorFromImage(image_path):
+    tmp_image_path = '/tmp/kadai-tmp.png'
+    create_tmp_image(image_path, tmp_image_path)
+    color_cmd = ColorThief(tmp_image_path).get_palette
+    raw_colors = color_cmd(color_count=2, quality=3)
+    return ColorUtils.rgb_to_hex(ColorUtils.hsv_to_rgb(ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.7)))
