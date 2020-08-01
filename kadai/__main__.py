@@ -50,6 +50,9 @@ def get_args():
     arg.add_argument("--warranty", action="store_true",
         help="Show the programs warranty")
 
+    arg.add_argument("--light", action="store_true",
+        help="Enable light theme")
+
     return arg
 
 def parse_args(parser):
@@ -91,6 +94,8 @@ GNU General Public License for more details.""")
         themer.setEngine(engine_type)
         themer.setOverride(args.override)
         themer.disableProgress(not show_progress)
+        if args.light:
+            themer.enableLightTheme()
 
         if args.g:
             themer.generate()

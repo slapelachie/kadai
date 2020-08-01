@@ -10,6 +10,15 @@ def rgb_to_hex(color):
 
 	return "#%02x%02x%02x" % (*color,)
 
+def hex_to_rgb(color):
+	"""
+	Convert a hex color to rgb.
+	Arguments:
+		color (string) -- hexadecimal value with the leading '#'
+	"""
+
+	return tuple(bytes.fromhex(color.strip("#")))
+
 def rgb_to_hsv(color):
 	"""
 	Converts from rgb to hsv

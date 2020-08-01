@@ -4,18 +4,12 @@ from kadai.engine import vibrance,genhue
 class TestVibranceEngine(unittest.TestCase):
 	def test_color_output_length(self):
 		result = vibrance.VibranceEngine("tests/assets/test.jpg").generate()
-		self.assertEqual(len(result), 16)
+		self.assertEqual(len(result), 7)
 
-	def test_color_hex(self):
-		result = vibrance.VibranceEngine("tests/assets/test.jpg").generate()
-		for color in result:
-			hex_string = color[1:]
-			int(hex_string, 16)
-	
 	def test_color_length(self):
 		result = vibrance.VibranceEngine("tests/assets/test.jpg").generate()
 		for color in result:
-			self.assertEqual(len(color), 7)
+			self.assertEqual(len(color), 3)
 
 	def test_get_image_brightness(self):
 		brightness = vibrance.get_image_brightness('tests/assets/test.jpg')
@@ -28,22 +22,16 @@ class TestVibranceEngine(unittest.TestCase):
 class TestHueEngine(unittest.TestCase):
 	def test_color_output_length(self):
 		result = genhue.HueEngine("tests/assets/test.jpg").generate()
-		self.assertEqual(len(result), 16)
-
-	def test_color_hex(self):
-		result = genhue.HueEngine("tests/assets/test.jpg").generate()
-		for color in result:
-			hex_string = color[1:]
-			int(hex_string, 16)
+		self.assertEqual(len(result), 7)
 	
 	def test_color_length(self):
 		result = genhue.HueEngine("tests/assets/test.jpg").generate()
 		for color in result:
-			self.assertEqual(len(color), 7)
+			self.assertEqual(len(color), 3)
 
 	def test_generateBaseColors(self):
-		base_colors = genhue.generateBaseColors((255,0,0), 0.7)
-		self.assertEqual(base_colors, [(0,0,178),(178,0,0),(0,178,0),(178,178,0),(0,0,178),(178,0,178),(0,178,178),(0,0,178)])
+		base_colors = genhue.generateBaseColors((255,0,0))
+		self.assertEqual(base_colors, [(0, 0, 255), (255, 0, 0), (0, 255, 0), (255, 255, 0), (0, 0, 255), (255, 0, 255), (0, 255, 255)])
 
 	def test_getDominantColorFromImage(self):
 		dominant_color = genhue.getDominantColorFromImage("tests/assets/test.jpg")

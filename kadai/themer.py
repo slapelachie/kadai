@@ -27,6 +27,7 @@ class Themer():
             "data/template.json")
         self.user_templates_path = os.path.join(CONFIG_PATH, 'templates/')
         self.disable_progress = True
+        self.light_theme = False
 
         FileUtils.ensure_dir_exists(self.theme_out_path)
 
@@ -51,6 +52,9 @@ class Themer():
 
     def disableProgress(self, condition):
         self.disable_progress = condition
+
+    def enableLightTheme(self):
+        self.light_theme = True
     
     def generate(self):
         tmp_file = "/tmp/kadai-tmp.png"
@@ -67,11 +71,12 @@ class Themer():
                 create_tmp_image(image, tmp_file)
 
                 colors = self.engine(tmp_file).generate()
+                pallete = createValueColorPallete(colors)
 
                 tqdm_logger.log(15, "[" + str(i+1) + "/" + str(len(unprocessed_images)) + "] Generating theme for " + image + "...")
             
-                with open(self.template_path) as template_file:
-                    createTemplateFromTemplate(template_file, str(image), colors, out_file)
+                createTemplateFromPallete(pallete, str(image), out_file)
+                #with open(self.template_path) as template_file:
         else:
             logger.info("No themes to generate.")
         
@@ -96,12 +101,17 @@ class Themer():
         primary_color = theme_data['primary']
         wallpaper = theme_data['wallpaper']
 
+        if self.light_theme:
+            theme_colors = makeLightThemeFromColors(colors)
+        else:
+            theme_colors = makeDarkThemeFromColors(colors)
+
         templates = get_template_files(self.user_templates_path)
 
         for template in templates:
             template_path = os.path.join(self.user_templates_path, template)
             out_file = os.path.join(self.out_path, template[:-5])
-            createFileFromTemplate(template_path, out_file, colors, primary_color)
+            createFileFromTemplate(template_path, out_file, theme_colors, primary_color)
         
         # Link wallpaper to cache folder
         linkWallpaperPathInFolder(wallpaper, self.out_path)
@@ -117,6 +127,20 @@ def getEngine(engine_name):
     else:
         from kadai.engine import VibranceEngine
         return VibranceEngine
+
+def createValueColorPallete(colors):
+    values = [0.1, 0.3, 0.5, 0.7, 0.9]
+    pallete = {}
+    for i in range(len(colors)):
+        color_value_dictionary = createValueSpreadDictionary(values, colors[i])
+        pallete['color{}'.format(i)] = color_value_dictionary
+    return pallete
+
+def createValueSpreadDictionary(values, color):
+    pallete = {}
+    for value in values:
+        pallete[str(value)] =  ColorUtils.rgb_to_hex(ColorUtils.changeValueFromRGB(color, value))
+    return pallete
 
 def get_template_files(template_dir):
     # Get all templates in the templates folder
@@ -143,17 +167,21 @@ def clearAndWriteDataToFile(file_path, data):
     with open(os.path.expanduser(file_path), 'a') as file:
         file.write(data)
 
-def createTemplateFromTemplate(template_file, image_path, colors, out_path):
-    filedata = template_file.read()
-    domiant_color = getDominantColorFromImage(image_path)
+def clearAndWriteJsonToFile(file_path, json_data):
+    if os.path.isfile(file_path):
+        open(os.path.expanduser(file_path), 'w').close()
+    with open(os.path.expanduser(file_path), 'wb') as file:
+        file.write(json.dumps(json_data,
+            indent=4, separators=(',',': ')).encode('utf-8'))
 
-    # Change placeholder values
-    filedata = filedata.replace("[wallpaper]", image_path)
-    filedata = filedata.replace("[primary]", domiant_color)
-    for i in range(len(colors)):
-        filedata = filedata.replace("[color" + str(i) + "]", str(colors[i]))
-    
-    clearAndWriteDataToFile(out_path, filedata)
+def createTemplateFromPallete(pallete, image_path, out_path):
+    file_contents = {}
+    domiant_color = getDominantColorFromImage(image_path)
+    file_contents['colors'] = pallete
+    file_contents['wallpaper'] = image_path
+    file_contents['primary'] = domiant_color
+
+    clearAndWriteJsonToFile(out_path, file_contents)
 
 def create_tmp_image(image, path):
     img = Image.open(image)
@@ -192,3 +220,25 @@ def createFileFromTemplate(template_path, out_file, colors, primary_color):
         filedata = modifyFiledataWithTemplate(filedata, colors, primary_color)
 
         clearAndWriteDataToFile(out_file, filedata)
+
+def makeLightThemeFromColors(colors):
+    new_colors = {}
+    new_colors['color0'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.1))
+    new_colors['color7'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.3']), 0.2))
+    new_colors['color8'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.1))
+    new_colors['color15'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.1']), 0.2))
+    for i in range(6):
+        new_colors['color{}'.format(str(i+1))] = colors['color{}'.format(str(1+i))]['0.5']
+        new_colors['color{}'.format(str(i+9))] = colors['color{}'.format(str(1+i))]['0.3']
+    return new_colors
+
+def makeDarkThemeFromColors(colors):
+    new_colors = {}
+    new_colors['color0'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.1']), 0.2))
+    new_colors['color7'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.1))
+    new_colors['color8'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.3']), 0.2))
+    new_colors['color15'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.1))
+    for i in range(6):
+        new_colors['color{}'.format(str(i+1))] = colors['color{}'.format(str(1+i))]['0.7']
+        new_colors['color{}'.format(str(i+9))] = colors['color{}'.format(str(1+i))]['0.9']
+    return new_colors

@@ -6,7 +6,7 @@ from colorthief import ColorThief
 from kadai.utils import ColorUtils
 
 # Match XColors
-color_hues = (240, 0, 120, 60, 240, 300, 180, 240)
+color_hues = (240, 0, 120, 60, 240, 300, 180)
 
 class HueEngine():
     def __init__(self, image):
@@ -14,33 +14,15 @@ class HueEngine():
         self.color = getDominantColorFromImage(image)
 
     def generate(self):
-        colors = []
+        distance = getMinDistanceFromHues(self.color)
+        base_colors = shiftHuesByDistance(generateBaseColors(self.color), distance)
+        return base_colors
 
-        # Generate Dark Color Pallete
-        colors.extend(createXorgPallete(self.color, 0.7))
-        # Generate Light Color Pallete
-        colors.extend(createXorgPallete(self.color, 0.9))
-
-        return [ ColorUtils.rgb_to_hex(color) for color in colors ]
-
-def createXorgPallete(color, value):
-    distance = getMinDistanceFromHues(color)
-    base_colors = shiftHuesByDistance(generateBaseColors(color, value), distance)
-    # Change Dark Color (color0)
-    base_colors[0] = ColorUtils.changeHueFromRGB(base_colors[0], ColorUtils.getHueFromRGB(color))
-    base_colors[0] = ColorUtils.changeValueFromRGB(base_colors[0], 0.1*value)
-    # Change Light Color (color7)
-    base_colors[7] = ColorUtils.changeHueFromRGB(base_colors[7], ColorUtils.getHueFromRGB(color))
-    base_colors[7] = ColorUtils.changeSaturationFromRGB(base_colors[7], 0.02)
-
-    return base_colors
-
-def generateBaseColors(color, value):
+def generateBaseColors(color):
     new_colors = []
     for i in range(len(color_hues)):
         hsv_color = ColorUtils.rgb_to_hsv(color)
         hsv_color = ColorUtils.changeHsvHue(hsv_color, float(color_hues[i]/360))
-        hsv_color = ColorUtils.changeHsvValue(hsv_color, value)
         if hsv_color[1] < 0.4:
             hsv_color = ColorUtils.changeHsvSaturation(hsv_color, 0.4)
         new_colors.append(ColorUtils.hsv_to_rgb(hsv_color))
