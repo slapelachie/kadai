@@ -212,7 +212,7 @@ def getDominantColorFromImage(image_path):
     create_tmp_image(image_path, tmp_image_path)
     color_cmd = ColorThief(tmp_image_path).get_palette
     raw_colors = color_cmd(color_count=2, quality=3)
-    return ColorUtils.rgb_to_hex(ColorUtils.hsv_to_rgb(ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.7)))
+    return ColorUtils.rgb_to_hex(ColorUtils.hsv_to_rgb(ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.6)))
 
 def createFileFromTemplate(template_path, out_file, colors, primary_color):
     with open(template_path) as template_file:
@@ -223,9 +223,9 @@ def createFileFromTemplate(template_path, out_file, colors, primary_color):
 
 def makeLightThemeFromColors(colors):
     new_colors = {}
-    new_colors['color0'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.1))
+    new_colors['color0'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.05))
     new_colors['color7'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.3']), 0.2))
-    new_colors['color8'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.1))
+    new_colors['color8'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.05))
     new_colors['color15'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.1']), 0.2))
     for i in range(6):
         new_colors['color{}'.format(str(i+1))] = colors['color{}'.format(str(1+i))]['0.5']
@@ -235,9 +235,9 @@ def makeLightThemeFromColors(colors):
 def makeDarkThemeFromColors(colors):
     new_colors = {}
     new_colors['color0'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.1']), 0.2))
-    new_colors['color7'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.1))
+    new_colors['color7'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.7']), 0.05))
     new_colors['color8'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.3']), 0.2))
-    new_colors['color15'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.1))
+    new_colors['color15'] = ColorUtils.rgb_to_hex(ColorUtils.changeSaturationFromRGB(ColorUtils.hex_to_rgb(colors['color0']['0.9']), 0.05))
     for i in range(6):
         new_colors['color{}'.format(str(i+1))] = colors['color{}'.format(str(1+i))]['0.7']
         new_colors['color{}'.format(str(i+9))] = colors['color{}'.format(str(1+i))]['0.9']

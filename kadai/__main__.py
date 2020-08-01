@@ -74,6 +74,7 @@ def parse_args(parser):
     # Determine flags from config and cli
     engine_type = config_handler.compareFlagWithConfig(args.backend, config_handler.parse_config()['engine'])
     show_progress = config_handler.compareFlagWithConfig(args.progress, config_handler.parse_config()['progress'])
+    enable_light_theme = config_handler.compareFlagWithConfig(args.light, config_handler.parse_config()['light'])
 
     if args.warranty:
         print("""Copyright (C) 2020 slapelachie
@@ -94,7 +95,7 @@ GNU General Public License for more details.""")
         themer.setEngine(engine_type)
         themer.setOverride(args.override)
         themer.disableProgress(not show_progress)
-        if args.light:
+        if enable_light_theme:
             themer.enableLightTheme()
 
         if args.g:
@@ -113,6 +114,8 @@ GNU General Public License for more details.""")
         last_image = os.path.join(DATA_PATH, "image")
         if(FileUtils.check_if_image(last_image)):
             themer = Themer(last_image, DATA_PATH)
+            if enable_light_theme:
+                themer.enableLightTheme()
             themer.update()
         else:
             logger.critical("Last image invalid or does not exist!")

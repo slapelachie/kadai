@@ -9,6 +9,7 @@ config_file_path = os.path.join(settings.CONFIG_PATH, 'config.json')
 config_default = {
     'engine': 'vibrance',
     'out_directory': '$HOME/.local/share/',
+    'light_theme': False,
     'progress': False,
     'debug': False
 }
