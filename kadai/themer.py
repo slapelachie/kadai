@@ -118,12 +118,15 @@ class Themer():
 
         # Run external scripts
         if self.run_post_scripts:
-            FileUtils.run_post_scripts()
+            FileUtils.run_post_scripts(light_theme=self.light_theme)
 
 def getEngine(engine_name):
     if engine_name == "hue":
         from kadai.engine import HueEngine
         return HueEngine
+    elif engine_name == "k_means":
+        from kadai.engine import kMeansEngine
+        return kMeansEngine
     else:
         from kadai.engine import VibranceEngine
         return VibranceEngine

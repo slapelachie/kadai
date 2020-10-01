@@ -96,11 +96,11 @@ def get_post_scripts(post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):
 	scripts.sort()
 	return scripts
 
-def run_post_scripts(post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):		
+def run_post_scripts(light_theme=False, post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):		
 	scripts = get_post_scripts(post_scripts_dir)
 
 	for script in scripts:
 		script = os.path.join(post_scripts_dir, script)
 
 		with open(os.devnull, 'w') as devnull:
-			subprocess.run(script, stdout=devnull, stderr=subprocess.STDOUT)
+			subprocess.run([script, str(light_theme).lower()], stdout=devnull, stderr=subprocess.STDOUT)

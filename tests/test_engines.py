@@ -1,5 +1,5 @@
 import unittest
-from kadai.engine import vibrance,genhue
+from kadai.engine import vibrance,genhue,k_means
 
 class TestVibranceEngine(unittest.TestCase):
 	def test_color_output_length(self):
@@ -40,6 +40,16 @@ class TestHueEngine(unittest.TestCase):
 	def test_shiftHuesByDistance(self):
 		new_colors = genhue.shiftHuesByDistance([(255,0,0),(125,0,0)], .5)
 		self.assertEqual(new_colors, [(0,255,255),(0,125,125)])
+
+class TestKMeansEngine(unittest.TestCase):
+	def test_color_output_length(self):
+		result = k_means.kMeansEngine("tests/assets/test.jpg").generate()
+		self.assertEqual(len(result), 7)
+	
+	def test_color_length(self):
+		result = k_means.kMeansEngine("tests/assets/test.jpg").generate()
+		for color in result:
+			self.assertEqual(len(color), 3)
 
 if __name__ == "__main__":
 	unittest.main()

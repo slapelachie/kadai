@@ -1,4 +1,5 @@
 import colorsys
+from PIL import Image, ImageDraw
 
 def rgb_to_hex(color):
 	"""
@@ -67,3 +68,16 @@ def changeSaturationFromRGB(color, saturation):
 def getHueFromRGB(color):
 	hsv_color = rgb_to_hsv(color)
 	return hsv_color[0]
+
+def generate_pallete_image(colors, n_colors=7):
+    x_pos = 0
+    pallete_length=60
+    palletes_length = pallete_length*n_colors
+
+    img = Image.new('RGB', (palletes_length,30), color=(0,0,0))
+    draw_image = ImageDraw.Draw(img)
+
+    for color in colors:
+        draw_image.rectangle(((x_pos, 0), (x_pos+pallete_length, 30)), fill=color)
+        x_pos += pallete_length
+    img.save('out.png')
