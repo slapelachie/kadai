@@ -42,7 +42,7 @@ def get_args():
         help="Clear all data relating to KADAI")
 
     arg.add_argument("--backend", metavar="name",
-        help="vibrance/hue")
+        help="vibrance/hue/k_means")
 
     arg.add_argument("--progress", action="store_true",
         help="Show progress of theme generation")
