@@ -188,7 +188,7 @@ def createTemplateFromPallete(pallete, image_path, out_path):
 
 def create_tmp_image(image, path):
     img = Image.open(image)
-    image_out = img.resize((150,75), Image.NEAREST).convert('RGB')
+    image_out = img.resize((100,50), Image.NEAREST).convert('RGB')
     image_out.save(path)
 
 def modifyFiledataWithTemplate(filedata, colors, primary_color):
