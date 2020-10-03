@@ -1,7 +1,6 @@
 from PIL import Image
 import math
 import random
-from kadai.engine.vibrance import sort_colors
 
 class kMeansEngine():
     def __init__(self, image):
@@ -9,8 +8,7 @@ class kMeansEngine():
         self.colors = get_colors(image)
 
     def generate(self):
-        return sort_colors(self.colors)
-
+        return self.colors
 
 class Point:
     def __init__(self, coordinates):
@@ -93,9 +91,6 @@ def euclidan(p, q):
     return math.sqrt(sum([
         (p.coordinates[i] - q.coordinates[i]) ** 2 for i in range(n_dim)
     ]))
-
-def rgb_to_hex(rgb):
-    return "#%s" % ''.join(('%02x' % p for p in rgb))
 
 def get_colors(filename, n_colors=7):
     points = get_points(filename)
