@@ -26,8 +26,8 @@ class TestFileUtils(unittest.TestCase):
 		images = FileUtils.get_image_list('tests/assets/')
 		self.assertEqual(len(images), 1)
 
-	def test_get_postscripts(self):
-		scripts = FileUtils.get_post_scripts(post_scripts_dir='tests/assets/postscripts/')
+	def test_get_hooks(self):
+		scripts = FileUtils.get_hooks(hooks_dir='tests/assets/hooks/')
 		self.assertEqual(len(scripts), 1)
 
 class TestColorUtils(unittest.TestCase):

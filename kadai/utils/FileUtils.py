@@ -84,23 +84,23 @@ def get_image_list(image_path):
 		raise ValueError("Unknown file type!")
 
 
-def get_post_scripts(post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):
+def get_hooks(hooks_dir=os.path.join(CONFIG_PATH, 'hooks')):
 	try:
-		os.makedirs(post_scripts_dir, exist_ok=True)
+		os.makedirs(hooks_dir, exist_ok=True)
 	except:
 		raise
 
-	scripts = [f for f in os.listdir(post_scripts_dir) 
+	scripts = [f for f in os.listdir(hooks_dir) 
 		if re.match(r'^([0-9]{2}-\w+)', f) 
-			and os.access(os.path.join(post_scripts_dir, f), os.X_OK)]
+			and os.access(os.path.join(hooks_dir, f), os.X_OK)]
 	scripts.sort()
 	return scripts
 
-def run_post_scripts(light_theme=False, post_scripts_dir=os.path.join(CONFIG_PATH, 'postscripts')):		
-	scripts = get_post_scripts(post_scripts_dir)
+def run_hooks(light_theme=False, hooks_dir=os.path.join(CONFIG_PATH, 'hooks')):		
+	scripts = get_hooks(hooks_dir)
 
 	for script in scripts:
-		script = os.path.join(post_scripts_dir, script)
+		script = os.path.join(hooks_dir, script)
 
 		with open(os.devnull, 'w') as devnull:
 			subprocess.run([script, str(light_theme).lower()], stdout=devnull, stderr=subprocess.STDOUT)

@@ -34,7 +34,7 @@ optional arguments:
 ```
 
 ### Important Note
-kadai does not work out of the box, as it relies on templates and postscripts to be functional.
+kadai does not work out of the box, as it relies on templates and hooks to be functional.
 This is covered in depth [here](https://github.com/slapelachie/kadai/wiki/ExtraFiles).
 
 ### Basic commands

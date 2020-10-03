@@ -50,7 +50,7 @@ class TestUtils(unittest.TestCase):
 	def test_update(self):
 		# Test if update passes when theme file exists
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
-		generator.setRunPostScripts(False)
+		generator.setRunHooks(False)
 		generator.setUserTemplatePath(template_dir)
 		generator.update()
 		
@@ -62,7 +62,7 @@ class TestUtils(unittest.TestCase):
 	def test_update_fail(self):
 		# Test if fail if theme file does not exist
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
-		generator.setRunPostScripts(False)
+		generator.setRunHooks(False)
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 		try:
 			generator.update()

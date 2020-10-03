@@ -19,7 +19,7 @@ class Themer():
         self.image_path = image_path
         self.out_path = out_path
         self.override = False
-        self.run_post_scripts = True
+        self.run_hooks = True
         self.engine_name = 'vibrance'
         self.engine = getEngine(self.engine_name)
         self.theme_out_path = os.path.join(out_path, 'themes/')
@@ -47,8 +47,8 @@ class Themer():
     def setUserTemplatePath(self, path):
         self.user_templates_path = path
     
-    def setRunPostScripts(self, condition):
-        self.run_post_scripts = condition
+    def setRunHooks(self, condition):
+        self.run_hooks = condition
 
     def disableProgress(self, condition):
         self.disable_progress = condition
@@ -117,8 +117,8 @@ class Themer():
         linkWallpaperPathInFolder(wallpaper, self.out_path)
 
         # Run external scripts
-        if self.run_post_scripts:
-            FileUtils.run_post_scripts(light_theme=self.light_theme)
+        if self.run_hooks:
+            FileUtils.run_hooks(light_theme=self.light_theme)
 
 def getEngine(engine_name):
     if engine_name == "hue":
