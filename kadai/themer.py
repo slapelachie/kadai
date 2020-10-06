@@ -4,6 +4,7 @@ import tqdm
 import logging
 import json
 import random
+import errno
 from colorthief import ColorThief
 from PIL import Image
 
@@ -206,9 +207,15 @@ def modifyFiledataWithTemplate(filedata, colors, primary_color):
 
 def linkWallpaperPathInFolder(wallpaper, folder_path):
     image_symlink = os.path.join(folder_path, 'image')
-    if os.path.isfile(image_symlink):
-        os.remove(image_symlink)
-    os.symlink(wallpaper, image_symlink)
+
+    try:
+        os.symlink(wallpaper, image_symlink)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            os.remove(image_symlink)
+            os.symlink(wallpaper, image_symlink)
+        else:
+            raise e
 
 def getDominantColorFromImage(image_path):
     tmp_image_path = '/tmp/kadai-tmp.png'
