@@ -141,7 +141,6 @@ $ pytest
 
 ## TODO
 * Allow printing colors to stout
-* Fix crash when wallpaper is removed
 
 ## Links
 \[[Required Files](https://github.com/slapelachie/kadai/wiki/ExtraFiles)\]
