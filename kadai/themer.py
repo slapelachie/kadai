@@ -252,3 +252,20 @@ def makeDarkThemeFromColors(colors):
         new_colors['color{}'.format(str(i+1))] = colors['color{}'.format(str(1+i))]['0.7']
         new_colors['color{}'.format(str(i+9))] = colors['color{}'.format(str(1+i))]['0.9']
     return new_colors
+
+"""
+kadai - Simple wallpaper manager for tiling window managers.
+Copyright (C) 2020  slapelachie
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Find the full license in the root of this project
+"""

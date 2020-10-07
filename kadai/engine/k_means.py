@@ -98,3 +98,20 @@ def get_colors(filename, n_colors=7):
     clusters.sort(key=lambda c: len(c.points), reverse = True)
     rgbs = list(map(tuple, [map(int, c.center.coordinates) for c in clusters]))
     return rgbs
+
+"""
+kadai - Simple wallpaper manager for tiling window managers.
+Copyright (C) 2020  slapelachie
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Find the full license in the root of this project
+"""

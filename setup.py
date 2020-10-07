@@ -8,7 +8,7 @@ setup(name='KADAI',
 	long_description_content_type="text/markdown",
 	long_description=LONG_DESC,
 	classifiers=[
-		'Development Status :: 3 - Alpha',
+		'Development Status :: 4 - Beta',
 		'Environment :: X11 Applications',
 		'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
 		'Natural Language :: English',
