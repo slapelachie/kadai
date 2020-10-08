@@ -119,7 +119,7 @@ GNU General Public License for more details.""")
         clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
         if(clear == "y"):
             try:
-                shutil.rmtree(DATA_PATH)
+                shutil.rmtree(CACHE_PATH)
             except:
                 raise
             logger.info("Cleared KADAI cache folders")

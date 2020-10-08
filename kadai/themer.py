@@ -9,7 +9,7 @@ from colorthief import ColorThief
 from PIL import Image
 
 from kadai.utils import FileUtils,ColorUtils
-from kadai.settings import CONFIG_PATH
+from kadai.settings import CONFIG_PATH, CACHE_PATH
 from kadai import log
 
 logger = log.setup_logger(__name__+'.default', log.defaultLoggingHandler(), level=logging.WARNING)
@@ -19,11 +19,12 @@ class Themer():
     def __init__(self, image_path, out_path):
         self.image_path = image_path
         self.out_path = out_path
+        self.cache_path = CACHE_PATH 
         self.override = False
         self.run_hooks = True
         self.engine_name = 'vibrance'
         self.engine = getEngine(self.engine_name)
-        self.theme_out_path = os.path.join(out_path, 'themes/')
+        self.theme_out_path = os.path.join(self.cache_path, 'themes/')
         self.template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
             "data/template.json")
         self.user_templates_path = os.path.join(CONFIG_PATH, 'templates/')
@@ -37,6 +38,9 @@ class Themer():
 
     def setOutPath(self, path):
         self.out_path = path
+
+    def setCachePath(self, path):
+        self.cache_path = path
 
     def setEngine(self, engine_name):
         self.engine_name = engine_name
