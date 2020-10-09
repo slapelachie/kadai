@@ -10,7 +10,7 @@ class TestConfigHandler(unittest.TestCase):
     def test_get_length(self):
         configHandler = ConfigHandler()
         configHandler.setConfigFilePath('tests/assets/non_config.json')
-        self.assertEqual(len(configHandler.get()), 5)
+        self.assertEqual(len(configHandler.get()), 6)
 
         shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 

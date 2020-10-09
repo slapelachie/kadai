@@ -4,10 +4,26 @@ import re
 import subprocess
 from PIL import Image
 
-from kadai.settings import CONFIG_PATH
-
 class noPreGenThemeError(Exception):
     pass
+
+def getDataPath():
+    if "XDG_DATA_HOME" in os.environ:
+        return os.path.join(os.getenv("XDG_DATA_HOME"), 'kadai')
+    else:
+        return os.path.expanduser('~/.local/share/kadai')
+
+def getCachePath():
+    if "XDG_CACHE_HOME" in os.environ:
+        return os.path.join(os.getenv("XDG_CACHE_HOME"), 'kadai')
+    else:
+        return os.path.expanduser('~/.cache/kadai')
+
+def getConfigPath():
+	if "XDG_CONFIG_HOME" in os.environ:
+		return os.path.join(os.getenv("XDG_CONFIG_HOME"), 'kadai')
+	else:
+		return os.path.expanduser('~/.config/kadai')
 
 def md5(string):
 	"""
@@ -84,7 +100,7 @@ def get_image_list(image_path):
 		raise ValueError("Unknown file type!")
 
 
-def get_hooks(hooks_dir=os.path.join(CONFIG_PATH, 'hooks')):
+def get_hooks(hooks_dir=os.path.join(getConfigPath(), 'hooks')):
 	try:
 		os.makedirs(hooks_dir, exist_ok=True)
 	except:
@@ -96,7 +112,7 @@ def get_hooks(hooks_dir=os.path.join(CONFIG_PATH, 'hooks')):
 	scripts.sort()
 	return scripts
 
-def run_hooks(light_theme=False, hooks_dir=os.path.join(CONFIG_PATH, 'hooks')):		
+def run_hooks(light_theme=False, hooks_dir=os.path.join(getConfigPath(), 'hooks')):		
 	scripts = get_hooks(hooks_dir)
 
 	for script in scripts:

@@ -2,15 +2,16 @@ import copy
 import os
 import json
 import pickle
-from kadai import settings
+from kadai.utils import FileUtils
 
 class ConfigHandler():
     def __init__(self):
-        self.config_file_path = os.path.join(settings.CONFIG_PATH, 'config.json')
+        self.config_file_path = os.path.join(FileUtils.getConfigPath(), 'config.json')
         self.config_file_out_path = self.config_file_path
         self.config_default = {
             'engine': 'vibrance',
-            'out_directory': '$HOME/.local/share/',
+            'data_directory': FileUtils.getDataPath(),
+            'cache_directory': FileUtils.getCachePath(),
             'light': False,
             'progress': False,
             'debug': False

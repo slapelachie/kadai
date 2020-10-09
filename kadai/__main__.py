@@ -8,7 +8,6 @@ import random
 from kadai import log
 from kadai import config_handler
 from kadai.config_handler import ConfigHandler
-from kadai.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from kadai.utils import FileUtils
 from kadai.themer import Themer
 
@@ -91,7 +90,7 @@ GNU General Public License for more details.""")
         exit(0)
 
     if args.i:
-        themer = Themer(args.i, DATA_PATH)
+        themer = Themer(args.i, config['data_directory'])
         themer.setEngine(engine_type)
         themer.setOverride(args.override)
         themer.disableProgress(not show_progress)
@@ -111,9 +110,9 @@ GNU General Public License for more details.""")
             sys.exit(0)
     elif args.p:
         # Check if the cached image exists, if it does update to that
-        last_image = os.path.join(DATA_PATH, "image")
+        last_image = os.path.join(config['data_directory'], "image")
         if(FileUtils.check_if_image(last_image)):
-            themer = Themer(last_image, DATA_PATH)
+            themer = Themer(last_image, config['data_directory'])
             if enable_light_theme:
                 themer.enableLightTheme()
             themer.update()
@@ -125,7 +124,7 @@ GNU General Public License for more details.""")
         clear = input("Are you sure you want to remove the cache relating to KADAI? [y/N] ").lower()
         if(clear == "y"):
             try:
-                shutil.rmtree(CACHE_PATH)
+                shutil.rmtree(config['cache_directory'])
             except:
                 raise
             logger.info("Cleared KADAI cache folders")
@@ -138,9 +137,9 @@ GNU General Public License for more details.""")
 def main():
     # Create required directories
     try:
-        os.makedirs(CACHE_PATH, exist_ok=True)
-        os.makedirs(DATA_PATH, exist_ok=True)
-        os.makedirs(CONFIG_PATH, exist_ok=True)
+        os.makedirs(config['cache_directory'], exist_ok=True)
+        os.makedirs(config['data_directory'], exist_ok=True)
+        os.makedirs(FileUtils.getConfigPath(), exist_ok=True)
     except:
         raise
 
