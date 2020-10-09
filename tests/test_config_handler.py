@@ -36,5 +36,5 @@ class TestConfigHandler(unittest.TestCase):
         configHandler.setConfigFilePath('tests/assets/non_config.json')
 
         config = configHandler.get()
-        self.assertTrue(config_handler.compareFlagWithConfig(True, config['light_theme']))
-        self.assertFalse(config_handler.compareFlagWithConfig(False, config['light_theme']))
+        self.assertTrue(config_handler.compareFlagWithConfig(True, config['light']))
+        self.assertFalse(config_handler.compareFlagWithConfig(False, config['light']))

@@ -11,7 +11,7 @@ class ConfigHandler():
         self.config_default = {
             'engine': 'vibrance',
             'out_directory': '$HOME/.local/share/',
-            'light_theme': False,
+            'light': False,
             'progress': False,
             'debug': False
         }
