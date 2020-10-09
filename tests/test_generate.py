@@ -3,6 +3,7 @@ import shutil
 import os
 from kadai.utils import FileUtils
 from kadai import themer
+from kadai.engine import HueEngine
 
 out_dir = '/tmp/github-runner-kadai/'
 template_dir = 'tests/assets/templates'
@@ -12,7 +13,6 @@ class TestUtils(unittest.TestCase):
 		# Test if can find all 2 template files
 		template_files = themer.get_template_files(template_dir)
 		self.assertEqual(len(template_files), 2)
-
 
 	def test_createValueSpreadDictionary(self):
 		values = [0.1, 0.3, 0.5, 0.7, 0.9]
@@ -47,6 +47,7 @@ class TestUtils(unittest.TestCase):
 			'themes/31084f2c8577234aeb55.json')))
 		self.assertTrue(os.path.isfile(os.path.join(out_dir,
 			'themes/31084f2c8577234aeb55.json')))
+
 	def test_update(self):
 		# Test if update passes when theme file exists
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
@@ -58,8 +59,42 @@ class TestUtils(unittest.TestCase):
 			'colors.sh')))
 		self.assertTrue(os.path.isfile(os.path.join(out_dir,
 			'Xdefaults')))
+
+	def test_update_light_theme(self):
+		# Test if update passes when theme file exists
+		generator = themer.Themer('tests/assets/test.jpg', out_dir)
+		generator.setRunHooks(False)
+		generator.setUserTemplatePath(template_dir)
+		generator.enableLightTheme()
+		generator.update()
+		
+		self.assertTrue(os.path.isfile(os.path.join(out_dir,
+			'colors.sh')))
+		self.assertTrue(os.path.isfile(os.path.join(out_dir,
+			'Xdefaults')))
+
+	def test_update_folder(self):
+		generator = themer.Themer('tests/assets/', out_dir)
+		generator.setRunHooks(False)
+		generator.setUserTemplatePath(template_dir)
+		generator.generate()
+		generator.update()
+		
+		self.assertTrue(os.path.isfile(os.path.join(out_dir,
+			'colors.sh')))
+		self.assertTrue(os.path.isfile(os.path.join(out_dir,
+			'Xdefaults')))
+
+	#def test_update_file_not_recognised(self):
+	#	generator = themer.Themer('tests/assets/test.txt', out_dir)
+	#	generator.setRunHooks(False)
+	#	try:
+	#		generator.update()
+	#		raise ValueError("How!?")
+	#	except 
+		
 	
-	def test_update_fail(self):
+	def test_update_not_find_generated(self):
 		# Test if fail if theme file does not exist
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
 		generator.setRunHooks(False)
@@ -70,6 +105,35 @@ class TestUtils(unittest.TestCase):
 			raise ValueError("Passed Succesfully?!")
 		except FileUtils.noPreGenThemeError:
 			pass
+	
+	def test_class_options(self):
+		generator = themer.Themer('tests/assets/test.png', 'tmp')
+		
+		generator.setImagePath('tests/assets/test.jpg')
+		self.assertEqual(generator.image_path, 'tests/assets/test.jpg')
+
+		generator.setOutPath(out_dir)
+		self.assertEqual(generator.out_path, out_dir)
+
+		generator.setEngine('hue')
+		self.assertEqual(generator.engine_name, 'hue')
+		self.assertEqual(generator.engine, HueEngine)
+
+		generator.setOverride(True)
+		self.assertEqual(generator.override, True)
+
+		generator.setUserTemplatePath('/tmp/templates')
+		self.assertEqual(generator.user_templates_path, '/tmp/templates')
+
+		generator.setRunHooks(False)
+		self.assertEqual(generator.run_hooks, False)
+
+		generator.disableProgress(False)
+		self.assertEqual(generator.disable_progress, False)
+
+		generator.enableLightTheme()
+		self.assertEqual(generator.light_theme, True)
+
 
 if __name__ == "__main__":
 	unittest.main()

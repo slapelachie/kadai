@@ -2,44 +2,44 @@ import colorsys
 from PIL import Image, ImageDraw
 
 def rgb_to_hex(color):
-	"""
-	Convert an rgb color to hex.
+    """
+    Convert an rgb color to hex.
 
-	Arguments:
-		color (list) -- list of red, green, and blue for a color [r, g, b]
-	"""
+    Arguments:
+        color (list) -- list of red, green, and blue for a color [r, g, b]
+    """
 
-	return "#%02x%02x%02x" % (*color,)
+    return "#%02x%02x%02x" % (*color,)
 
 def hex_to_rgb(color):
-	"""
-	Convert a hex color to rgb.
-	Arguments:
-		color (string) -- hexadecimal value with the leading '#'
-	"""
+    """
+    Convert a hex color to rgb.
+    Arguments:
+        color (string) -- hexadecimal value with the leading '#'
+    """
 
-	return tuple(bytes.fromhex(color.strip("#")))
+    return tuple(bytes.fromhex(color.strip("#")))
 
 def rgb_to_hsv(color):
-	"""
-	Converts from rgb to hsv
+    """
+    Converts from rgb to hsv
 
-	Arguments:
-		color (list) -- list of red, green, and blue for a color [r, g, b]
-	"""
-	new_cols = list(colorsys.rgb_to_hsv(*[float(x/255) for x in color]))
-	return tuple(new_cols)
+    Arguments:
+        color (list) -- list of red, green, and blue for a color [r, g, b]
+    """
+    new_cols = list(colorsys.rgb_to_hsv(*[float(x/255) for x in color]))
+    return tuple(new_cols)
 
 def hsv_to_rgb(color):
-	"""
-	Converts from hsv to rgb
+    """
+    Converts from hsv to rgb
 
-	Arguments:
-		color (list) -- list of hue, saturation, and value for a color [h, s, v]
-	"""
+    Arguments:
+        color (list) -- list of hue, saturation, and value for a color [h, s, v]
+    """
 
-	color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
-	return tuple([int(col*255) for col in color_rgb])
+    color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
+    return tuple([int(col*255) for col in color_rgb])
 
 def changeHsvValue(color, value):
     return (color[0], color[1], value)
@@ -51,33 +51,20 @@ def changeHsvSaturation(color, saturation):
     return (color[0], saturation, color[2])
 
 def changeHueFromRGB(color, hue):
-	hsv_color = rgb_to_hsv(color)
-	hsv_color = (hue, hsv_color[1], hsv_color[2])
-	return hsv_to_rgb(hsv_color)
+    hsv_color = rgb_to_hsv(color)
+    hsv_color = (hue, hsv_color[1], hsv_color[2])
+    return hsv_to_rgb(hsv_color)
 
 def changeValueFromRGB(color, value):
-	hsv_color = rgb_to_hsv(color)
-	hsv_color = (hsv_color[0], hsv_color[1], value)
-	return hsv_to_rgb(hsv_color)
+    hsv_color = rgb_to_hsv(color)
+    hsv_color = (hsv_color[0], hsv_color[1], value)
+    return hsv_to_rgb(hsv_color)
 
 def changeSaturationFromRGB(color, saturation):
-	hsv_color = rgb_to_hsv(color)
-	hsv_color = (hsv_color[0], saturation, hsv_color[2])
-	return hsv_to_rgb(hsv_color)
+    hsv_color = rgb_to_hsv(color)
+    hsv_color = (hsv_color[0], saturation, hsv_color[2])
+    return hsv_to_rgb(hsv_color)
 
 def getHueFromRGB(color):
-	hsv_color = rgb_to_hsv(color)
-	return hsv_color[0]
-
-def generate_pallete_image(colors, n_colors=7):
-    x_pos = 0
-    pallete_length=60
-    palletes_length = pallete_length*n_colors
-
-    img = Image.new('RGB', (palletes_length,30), color=(0,0,0))
-    draw_image = ImageDraw.Draw(img)
-
-    for color in colors:
-        draw_image.rectangle(((x_pos, 0), (x_pos+pallete_length, 30)), fill=color)
-        x_pos += pallete_length
-    img.save('out.png')
+    hsv_color = rgb_to_hsv(color)
+    return hsv_color[0]

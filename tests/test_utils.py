@@ -21,10 +21,24 @@ class TestFileUtils(unittest.TestCase):
 	def test_get_image_list_one(self):
 		images = FileUtils.get_image_list('tests/assets/test.jpg')
 		self.assertEqual(len(images), 1)
+		
+	def test_get_image_list_one_fail(self):
+		try:
+			images = FileUtils.get_image_list('tests/assets/test.txt')
+			raise ValueError("How!?")
+		except:
+			pass
 	
 	def test_get_image_list_all(self):
 		images = FileUtils.get_image_list('tests/assets/')
 		self.assertEqual(len(images), 1)
+
+	def test_get_image_list_none(self):
+		try:
+			images = FileUtils.get_image_list('tests/')
+			raise ValueError("How!?")
+		except:
+			pass
 
 	def test_get_hooks(self):
 		scripts = FileUtils.get_hooks(hooks_dir='tests/assets/hooks/')

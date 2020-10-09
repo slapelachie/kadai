@@ -12,7 +12,7 @@ class TqdmLoggingHandler(logging.Handler):
 	def __init__(self, level=logging.NOTSET):
 		super().__init__(level)
 
-	def emit(self, record):
+	"""def emit(self, record):
 		try:
 			self.setFormatter(logging.Formatter(default_format))
 			msg = self.format(record)
@@ -21,10 +21,10 @@ class TqdmLoggingHandler(logging.Handler):
 		except (KeyboardInterrupt, SystemExit):
 			raise
 		except:
-			self.handleError(record)
+			self.handleError(record)"""
 
 class defaultLoggingHandler(logging.StreamHandler):
-	def emit(self, record):
+	"""def emit(self, record):
 		try:
 			self.setFormatter(logging.Formatter(default_format+'\n'))
 			msg = self.format(record)
@@ -34,7 +34,7 @@ class defaultLoggingHandler(logging.StreamHandler):
 		except (KeyboardInterrupt, SystemExit):
 			raise
 		except:
-			self.handleError(record)	
+			self.handleError(record)	"""
 
 def setup_logger(name, handler, level=logging.WARNING):
 	""" Sets up the logger """	
