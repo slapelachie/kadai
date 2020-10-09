@@ -26,13 +26,12 @@ class TestUtils(unittest.TestCase):
 	
 	def test_generate_one(self):
 		# Testing for generating one theme
-		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
+		#shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
+		generator.setCachePath(out_dir)
 		generator.generate()
 
-		self.assertIs(os.path.isfile(os.path.join(out_dir,
-			'themes/31084f2c8577234aeb55.json')), True)
 		self.assertIs(os.path.isfile(os.path.join(out_dir,
 			'themes/31084f2c8577234aeb55.json')), True)
 
@@ -41,6 +40,7 @@ class TestUtils(unittest.TestCase):
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 
 		generator = themer.Themer('tests/assets/', out_dir)
+		generator.setCachePath(out_dir)
 		generator.generate()
 
 		self.assertTrue(os.path.isfile(os.path.join(out_dir,
@@ -51,6 +51,7 @@ class TestUtils(unittest.TestCase):
 	def test_update(self):
 		# Test if update passes when theme file exists
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
+		generator.setCachePath(out_dir)
 		generator.setRunHooks(False)
 		generator.setUserTemplatePath(template_dir)
 		generator.update()
@@ -63,6 +64,7 @@ class TestUtils(unittest.TestCase):
 	def test_update_light_theme(self):
 		# Test if update passes when theme file exists
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
+		generator.setCachePath(out_dir)
 		generator.setRunHooks(False)
 		generator.setUserTemplatePath(template_dir)
 		generator.enableLightTheme()
@@ -75,6 +77,7 @@ class TestUtils(unittest.TestCase):
 
 	def test_update_folder(self):
 		generator = themer.Themer('tests/assets/', out_dir)
+		generator.setCachePath(out_dir)
 		generator.setRunHooks(False)
 		generator.setUserTemplatePath(template_dir)
 		generator.generate()
@@ -97,6 +100,7 @@ class TestUtils(unittest.TestCase):
 	def test_update_not_find_generated(self):
 		# Test if fail if theme file does not exist
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
+		generator.setCachePath(out_dir)
 		generator.setRunHooks(False)
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 		try:

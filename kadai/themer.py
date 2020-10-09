@@ -41,6 +41,8 @@ class Themer():
 
     def setCachePath(self, path):
         self.cache_path = path
+        self.theme_out_path = os.path.join(self.cache_path, 'themes/')
+        FileUtils.ensure_dir_exists(self.theme_out_path)
 
     def setEngine(self, engine_name):
         self.engine_name = engine_name
