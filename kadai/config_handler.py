@@ -4,17 +4,50 @@ import json
 import pickle
 from kadai import settings
 
-config_file_path = os.path.join(settings.CONFIG_PATH, 'config.json')
+class ConfigHandler():
+    def __init__(self):
+        self.config_file_path = os.path.join(settings.CONFIG_PATH, 'config.json')
+        self.config_file_out_path = self.config_file_path
+        self.config_default = {
+            'engine': 'vibrance',
+            'out_directory': '$HOME/.local/share/',
+            'light_theme': False,
+            'progress': False,
+            'debug': False
+        }
 
-config_default = {
-    'engine': 'vibrance',
-    'out_directory': '$HOME/.local/share/',
-    'light_theme': False,
-    'progress': False,
-    'debug': False
-}
+        self.config = parse_config(self.config_default, self.config_file_path)
 
-def parse_config():
+    def setConfigFilePath(self, path):
+        self.config_file_path = path
+        self.config = parse_config(self.config_default, self.config_file_path)
+
+    def setConfigFileOutPath(self, path):
+        self.config_file_out_path = path
+
+    def get(self):
+        return self.config
+
+    def save(self):
+        config_path = os.path.dirname(self.config_file_out_path)
+        if not os.path.isdir(config_path):
+            os.mkdir(config_path)
+
+        with open(self.config_file_out_path, 'wb') as config_file:
+            config_file.write(json.dumps(self.config,
+                indent=4, separators=(',',': ')).encode('utf-8'))
+
+    def load(self, config_file_path):
+        with open(config_file_path, 'rb') as config_file:
+            self.config = json.load(config_file)
+
+def compareFlagWithConfig(flag, config_option):
+    if(flag):
+        return flag
+    else:
+        return config_option
+
+def parse_config(config_default, config_file_path):
     config = copy.copy(config_default)
     
     try:
@@ -22,28 +55,9 @@ def parse_config():
             loaded_config = json.load(config_file)
             config.update(loaded_config)
     except IOError:
-        save_config(config)
+        pass
     
     return config
-
-def save_config(config_dict):
-    config_path = os.path.dirname(config_file_path)
-    if not os.path.isdir(config_path):
-        os.mkdir(config_path)
-
-    with open(config_file_path, 'wb') as config_file:
-        config_file.write(json.dumps(config_dict,
-            indent=4, separators=(',',': ')).encode('utf-8'))
-
-def load_config(config_file_path):
-    with open(config_file_path, 'rb') as config_file:
-        return pickle.load(config_file, encoding='utf-8')
-
-def compareFlagWithConfig(flag, config_option):
-    if(flag):
-        return flag
-    else:
-        return config_option
 
 """
 kadai - Simple wallpaper manager for tiling window managers.

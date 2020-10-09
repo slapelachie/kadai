@@ -5,12 +5,18 @@ import logging
 import shutil
 import random
 
-from kadai import log, config_handler
+from kadai import log
+from kadai import config_handler
+from kadai.config_handler import ConfigHandler
 from kadai.settings import DATA_PATH, CONFIG_PATH, CACHE_PATH
 from kadai.utils import FileUtils
 from kadai.themer import Themer
 
 logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
+
+configHandler = ConfigHandler()
+configHandler.save()
+config = configHandler.get()
 
 def get_args():
     """ Get the args parsed from the command line and does arg handling stuff """
@@ -66,9 +72,9 @@ def parse_args(parser):
     VERBOSE_MODE = True if args.v else False
 
     # Determine flags from config and cli
-    engine_type = config_handler.compareFlagWithConfig(args.backend, config_handler.parse_config()['engine'])
-    show_progress = config_handler.compareFlagWithConfig(args.progress, config_handler.parse_config()['progress'])
-    enable_light_theme = config_handler.compareFlagWithConfig(args.light, config_handler.parse_config()['light'])
+    engine_type = config_handler.compareFlagWithConfig(args.backend, config['engine'])
+    show_progress = config_handler.compareFlagWithConfig(args.progress, config['progress'])
+    enable_light_theme = config_handler.compareFlagWithConfig(args.light, config['light'])
 
     if args.warranty:
         print("""Copyright (C) 2020 slapelachie

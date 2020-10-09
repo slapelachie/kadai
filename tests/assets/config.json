@@ -1,0 +1,7 @@
+{
+    "engine": "vibrance",
+    "out_directory": "$HOME/.local/share/",
+    "light_theme": true,
+    "progress": false,
+    "debug": false
+}
