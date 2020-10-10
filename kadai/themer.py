@@ -96,8 +96,7 @@ class Themer():
             random.shuffle(images)
             self.image_path = images[0]
         elif not os.path.isfile(self.image_path):
-            logger.critical("Provided file is not recognised!")
-            exit(1)
+            raise FileUtils.noPreGenThemeError("Provided file is not recognised!")
         
         md5_hash = FileUtils.md5_file(self.image_path)[:20]
 

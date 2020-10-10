@@ -26,7 +26,7 @@ class TestUtils(unittest.TestCase):
 	
 	def test_generate_one(self):
 		# Testing for generating one theme
-		#shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
+		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 
 		generator = themer.Themer('tests/assets/test.jpg', out_dir)
 		generator.setCachePath(out_dir)
@@ -88,14 +88,14 @@ class TestUtils(unittest.TestCase):
 		self.assertTrue(os.path.isfile(os.path.join(out_dir,
 			'Xdefaults')))
 
-	#def test_update_file_not_recognised(self):
-	#	generator = themer.Themer('tests/assets/test.txt', out_dir)
-	#	generator.setRunHooks(False)
-	#	try:
-	#		generator.update()
-	#		raise ValueError("How!?")
-	#	except 
-		
+	def test_update_file_not_recognised(self):
+		generator = themer.Themer('tests/assets/test.txt', out_dir)
+		generator.setRunHooks(False)
+		try:
+			generator.update()
+			raise ValueError("How!?")
+		except FileUtils.noPreGenThemeError:
+			pass
 	
 	def test_update_not_find_generated(self):
 		# Test if fail if theme file does not exist
@@ -105,7 +105,6 @@ class TestUtils(unittest.TestCase):
 		shutil.rmtree(out_dir, ignore_errors='FileNotFoundError')
 		try:
 			generator.update()
-			#theme.update('tests/assets/test.jpg', out_dir, template_dir)
 			raise ValueError("Passed Succesfully?!")
 		except FileUtils.noPreGenThemeError:
 			pass

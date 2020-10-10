@@ -3,7 +3,7 @@ from setuptools import setup
 LONG_DESC = open('README.md').read()
 
 setup(name='KADAI',
-	version='1.0.0rc1',
+	version='1.0.0rc2',
 	description='Simple wallpaper manager for tiling window managers.',
 	long_description_content_type="text/markdown",
 	long_description=LONG_DESC,
