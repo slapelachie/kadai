@@ -1,7 +1,7 @@
 import math
 import sys
 import logging
-from PIL import Image,ImageStat
+from PIL import Image, ImageStat
 from colorthief import ColorThief
 
 from kadai import log
@@ -9,7 +9,8 @@ from kadai.utils import ColorUtils
 
 logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
 
-class VibranceEngine():
+
+class VibranceEngine:
     def __init__(self, image_path):
         self.raw_colors = gen_colors(image_path)
         self.image_path = image_path
@@ -17,77 +18,88 @@ class VibranceEngine():
     def generate(self):
         """
         Generate the palette. Returns a list of hexidecimal colors
-        
+
         Arguments:
             img (str) -- location of the image
         """
         return sort_colors(self.raw_colors)
 
+
 def get_image_brightness(im_file):
-	im = Image.open(im_file)
-	stat = ImageStat.Stat(im)
-	r,g,b = stat.mean
-	return math.sqrt(0.299*(r**2) + 0.587*(g**2) + 0.114*(b**2))
+    im = Image.open(im_file)
+    stat = ImageStat.Stat(im)
+    r, g, b = stat.mean
+    return math.sqrt(0.299 * (r ** 2) + 0.587 * (g ** 2) + 0.114 * (b ** 2))
+
 
 def sort_by_vibrance(colors):
-	"""
-	Sorts the colors by their vibrance (saturation * brightness(value))
+    """
+    Sorts the colors by their vibrance (saturation * brightness(value))
 
-	Arguments:
-		colors (list) -- list of rgb colors
-	"""
+    Arguments:
+            colors (list) -- list of rgb colors
+    """
 
-	hsv_distance=calculateVibranceFromList(colors)
-	adj_colors = sorted(hsv_distance, key = lambda x:abs(x[1]-1))
-	return [i[0] for i in adj_colors]
+    hsv_distance = calculateVibranceFromList(colors)
+    adj_colors = sorted(hsv_distance, key=lambda x: abs(x[1] - 1))
+    return [i[0] for i in adj_colors]
+
 
 def calculateVibrance(color):
-	hsv_color = [*ColorUtils.rgb_to_hsv(color)]
-	ideal_brightness=1
+    hsv_color = [*ColorUtils.rgb_to_hsv(color)]
+    ideal_brightness = 1
 
-	# Basically the closer the brightness is to the ideal brightness and
-	# the higher the saturation is the larger the output value
-	return hsv_color[1]*(2+(1-((hsv_color[2]/ideal_brightness)+(ideal_brightness/hsv_color[2]))))	
+    # Basically the closer the brightness is to the ideal brightness and
+    # the higher the saturation is the larger the output value
+    return hsv_color[1] * (
+        2
+        + (1 - ((hsv_color[2] / ideal_brightness) + (ideal_brightness / hsv_color[2])))
+    )
+
 
 def calculateVibranceFromList(colors):
-	hsv_distance = []
-	for i in range(len(colors)):
-		vibrance = calculateVibrance(colors[i])
-		hsv_distance.append([colors[i], vibrance])
-	return hsv_distance
+    hsv_distance = []
+    for i in range(len(colors)):
+        vibrance = calculateVibrance(colors[i])
+        hsv_distance.append([colors[i], vibrance])
+    return hsv_distance
+
 
 def sort_to_list(colors, color_list):
-	return [i for i in color_list if i in colors]
+    return [i for i in color_list if i in colors]
+
 
 def sort_colors(colors):
-	"""
-	Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 8)
+    """
+    Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 8)
 
-	Arguments:
-		colors (list) -- list of rgb formatted colors
-	"""
+    Arguments:
+            colors (list) -- list of rgb formatted colors
+    """
 
-	# Sort by vibrance and get the least vibrant and the 7 most vibrant
-	sorted_colors = sort_by_vibrance(colors)
-	top_vibrant = sorted_colors[:7]
-	return sort_to_list(top_vibrant, colors)
+    # Sort by vibrance and get the least vibrant and the 7 most vibrant
+    sorted_colors = sort_by_vibrance(colors)
+    top_vibrant = sorted_colors[:7]
+    return sort_to_list(top_vibrant, colors)
+
 
 def gen_colors(image_path):
-	"""
-	Create a list of colors, max of 16 and min of 8
-	
-	Arguments:
-		img (str) -- location of the image
-	"""
+    """
+    Create a list of colors, max of 16 and min of 8
 
-	color_cmd = ColorThief(image_path).get_palette
-	raw_colors = color_cmd(color_count=16, quality=3)
+    Arguments:
+            img (str) -- location of the image
+    """
 
-	if len(raw_colors) <= 8:		
-		logger.warn("ColorThief couldn't generate a suitable pallete")
-		return None
+    color_cmd = ColorThief(image_path).get_palette
+    raw_colors = color_cmd(color_count=16, quality=3)
 
-	return raw_colors
+    if len(raw_colors) <= 8:
+        logger.warn("ColorThief couldn't generate a suitable pallete")
+        return None
+
+    return raw_colors
+
 
 """
 kadai - Simple wallpaper manager for tiling window managers.

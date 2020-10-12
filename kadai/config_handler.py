@@ -4,17 +4,18 @@ import json
 import pickle
 from kadai.utils import FileUtils
 
-class ConfigHandler():
+
+class ConfigHandler:
     def __init__(self):
-        self.config_file_path = os.path.join(FileUtils.getConfigPath(), 'config.json')
+        self.config_file_path = os.path.join(FileUtils.getConfigPath(), "config.json")
         self.config_file_out_path = self.config_file_path
         self.config_default = {
-            'engine': 'vibrance',
-            'data_directory': FileUtils.getDataPath(),
-            'cache_directory': FileUtils.getCachePath(),
-            'light': False,
-            'progress': False,
-            'debug': False
+            "engine": "vibrance",
+            "data_directory": FileUtils.getDataPath(),
+            "cache_directory": FileUtils.getCachePath(),
+            "light": False,
+            "progress": False,
+            "debug": False,
         }
 
         self.config = parse_config(self.config_default, self.config_file_path)
@@ -34,31 +35,37 @@ class ConfigHandler():
         if not os.path.isdir(config_path):
             os.mkdir(config_path)
 
-        with open(self.config_file_out_path, 'wb') as config_file:
-            config_file.write(json.dumps(self.config,
-                indent=4, separators=(',',': ')).encode('utf-8'))
+        with open(self.config_file_out_path, "wb") as config_file:
+            config_file.write(
+                json.dumps(self.config, indent=4, separators=(",", ": ")).encode(
+                    "utf-8"
+                )
+            )
 
     def load(self, config_file_path):
-        with open(config_file_path, 'rb') as config_file:
+        with open(config_file_path, "rb") as config_file:
             self.config = json.load(config_file)
 
+
 def compareFlagWithConfig(flag, config_option):
-    if(flag):
+    if flag:
         return flag
     else:
         return config_option
 
+
 def parse_config(config_default, config_file_path):
     config = copy.copy(config_default)
-    
+
     try:
         with open(config_file_path) as config_file:
             loaded_config = json.load(config_file)
             config.update(loaded_config)
     except IOError:
         pass
-    
+
     return config
+
 
 """
 kadai - Simple wallpaper manager for tiling window managers.
