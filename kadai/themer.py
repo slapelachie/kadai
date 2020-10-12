@@ -19,14 +19,15 @@ configHandler = ConfigHandler()
 config = configHandler.get()
 
 class Themer():
-    def __init__(self, image_path, out_path):
+    def __init__(self, image_path, out_path, config=config):
+        self.config = config
         self.image_path = image_path
         self.out_path = out_path
-        self.cache_path = config['cache_directory']
         self.override = False
         self.run_hooks = True
         self.engine_name = 'vibrance'
         self.engine = getEngine(self.engine_name)
+        self.cache_path = self.config['cache_directory']
         self.theme_out_path = os.path.join(self.cache_path, 'themes/')
         self.template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
             "data/template.json")

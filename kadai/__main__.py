@@ -34,6 +34,9 @@ def get_args():
     arg.add_argument("-p", action="store_true",
         help="Use last set theme")
 
+    arg.add_argument("-c", metavar="\"path/to/config\"",
+        help="Custom config file at a different location")
+
     arg.add_argument('--override', action="store_true",
         help="Override exisiting themes")
     
@@ -61,6 +64,7 @@ def parse_args(parser):
     Arguments:
         parser (idk) -- the argument parser
     """
+    global config
 
     args = parser.parse_args()
 
@@ -69,6 +73,9 @@ def parse_args(parser):
         sys.exit(1)
 
     VERBOSE_MODE = True if args.v else False
+    if args.c:
+        configHandler.load(args.c)
+        config = configHandler.get()
 
     # Determine flags from config and cli
     engine_type = config_handler.compareFlagWithConfig(args.backend, config['engine'])
@@ -90,7 +97,7 @@ GNU General Public License for more details.""")
         exit(0)
 
     if args.i:
-        themer = Themer(args.i, config['data_directory'])
+        themer = Themer(args.i, config['data_directory'], config=config)
         themer.setEngine(engine_type)
         themer.setOverride(args.override)
         themer.disableProgress(not show_progress)
