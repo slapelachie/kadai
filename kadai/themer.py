@@ -103,13 +103,9 @@ class Themer:
 
                 tqdm_logger.log(
                     15,
-                    "["
-                    + str(i + 1)
-                    + "/"
-                    + str(len(unprocessed_images))
-                    + "] Generating theme for "
-                    + image
-                    + "...",
+                    "[{}/{}] Generating theme for {}...".format(
+                        str(i + 1), str(len(unprocessed_images)), image
+                    ),
                 )
 
                 createTemplateFromPallete(pallete, str(image), out_file)
@@ -144,12 +140,17 @@ class Themer:
         else:
             theme_colors = makeDarkThemeFromColors(colors)
 
-        templates = get_template_files(self.user_templates_path)
+        try:
+            templates = get_template_files(self.user_templates_path)
 
-        for template in templates:
-            template_path = os.path.join(self.user_templates_path, template)
-            out_file = os.path.join(self.out_path, template[:-5])
-            createFileFromTemplate(template_path, out_file, theme_colors, primary_color)
+            for template in templates:
+                template_path = os.path.join(self.user_templates_path, template)
+                out_file = os.path.join(self.out_path, template[:-5])
+                createFileFromTemplate(
+                    template_path, out_file, theme_colors, primary_color
+                )
+        except FileNotFoundError:
+            tqdm_logger.warn("No templates files found...")
 
         # Link wallpaper to cache folder
         linkWallpaperPathInFolder(wallpaper, self.out_path)
@@ -194,7 +195,10 @@ def createValueSpreadDictionary(values, color):
 
 def get_template_files(template_dir):
     # Get all templates in the templates folder
-    templates = [f for f in os.listdir(template_dir) if re.match(r".*\.base$", f)]
+    try:
+        templates = [f for f in os.listdir(template_dir) if re.match(r".*\.base$", f)]
+    except FileNotFoundError:
+        raise FileNotFoundError
 
     return templates
 
