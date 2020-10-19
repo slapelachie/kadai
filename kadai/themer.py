@@ -38,6 +38,7 @@ class Themer:
             os.path.abspath(os.path.dirname(__file__)), "data/template.json"
         )
         self.user_templates_path = os.path.join(FileUtils.getConfigPath(), "templates/")
+        self.user_hooks_path = os.path.join(FileUtils.getConfigPath(), "hooks/")
         self.disable_progress = True
         self.light_theme = False
 
@@ -63,6 +64,9 @@ class Themer:
 
     def setUserTemplatePath(self, path):
         self.user_templates_path = path
+
+    def setUserHooksPath(self, path):
+        self.user_hooks_path = path
 
     def setRunHooks(self, condition):
         self.run_hooks = condition
@@ -157,7 +161,9 @@ class Themer:
 
         # Run external scripts
         if self.run_hooks:
-            FileUtils.run_hooks(light_theme=self.light_theme)
+            FileUtils.run_hooks(
+                light_theme=self.light_theme, hooks_dir=self.user_hooks_path
+            )
 
 
 def getEngine(engine_name):
