@@ -105,13 +105,6 @@ class TestUtils(unittest.TestCase):
     def test_update_no_templates(self):
         generator = themer.Themer("tests/assets/test.jpg", out_dir)
         generator.setCachePath(out_dir)
-        generator.setRunHooks(False)
-        generator.setUserTemplatePath(out_dir)
-        generator.update()
-
-    def test_update_no_templates_run_hooks(self):
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
-        generator.setCachePath(out_dir)
         generator.setRunHooks(True)
         generator.setUserTemplatePath(out_dir)
         generator.update()
