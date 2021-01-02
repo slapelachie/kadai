@@ -115,16 +115,30 @@ GNU General Public License for more details."""
         try:
             themer.update()
         except FileUtils.noPreGenThemeError:
+            print("generating...")
             themer.generate()
             themer.update()
     elif args.p:
         # Check if the cached image exists, if it does update to that
         last_image = os.path.join(config["data_directory"], "image")
+        engine_type = config_handler.compareFlagWithConfig(
+            args.backend, config["engine"]
+        )
+
+        print(last_image)
+
         if FileUtils.check_if_image(last_image):
-            themer = Themer(last_image, config["data_directory"])
+            themer = Themer(os.readlink(last_image), config["data_directory"])
+            themer.setEngine(engine_type)
             if enable_light_theme:
                 themer.enableLightTheme()
-            themer.update()
+
+            try:
+                themer.update()
+            except FileUtils.noPreGenThemeError:
+                print("generating...")
+                themer.generate()
+                themer.update()
         else:
             logger.critical("Last image invalid or does not exist!")
             sys.exit(1)

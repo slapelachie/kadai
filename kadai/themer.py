@@ -81,12 +81,20 @@ class Themer:
         theme_colors = None
         md5_hash = FileUtils.md5_file(self.image_path)[:20]
 
-        if not os.path.isfile(os.path.join(self.theme_out_path, md5_hash + ".json")):
+        if not os.path.isfile(
+            os.path.join(
+                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
+            )
+        ):
             raise FileUtils.noPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
-        with open(os.path.join(self.theme_out_path, md5_hash + ".json")) as json_data:
+        with open(
+            os.path.join(
+                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
+            )
+        ) as json_data:
             theme_data = json.load(json_data)
 
         colors = theme_data["colors"]
@@ -101,15 +109,20 @@ class Themer:
     def generate(self):
         tmp_file = "/tmp/kadai-tmp.png"
 
-        image_path_md5 = [
-            [i, FileUtils.md5_file(i)[:20]]
+        image_path_name = [
+            [i, "{}-{}".format(FileUtils.md5_file(i)[:20], self.engine_name)]
             for i in FileUtils.get_image_list(self.image_path)
         ]
         unprocessed_images = (
-            image_path_md5
+            image_path_name
             if self.override
-            else get_non_generated(image_path_md5, self.theme_out_path)
+            else get_non_generated(
+                image_path_name,
+                self.theme_out_path,
+            )
         )
+
+        print(unprocessed_images)
 
         if len(unprocessed_images) > 0:
             for i in tqdm.tqdm(
@@ -118,8 +131,8 @@ class Themer:
                 disable=self.disable_progress,
             ):
                 image = unprocessed_images[i][0]
-                md5_hash = unprocessed_images[i][1]
-                out_file = os.path.join(self.theme_out_path, md5_hash + ".json")
+                filename = unprocessed_images[i][1]
+                out_file = os.path.join(self.theme_out_path, "{}.json".format(filename))
 
                 create_tmp_image(image, tmp_file)
 
@@ -147,13 +160,22 @@ class Themer:
             raise FileUtils.noPreGenThemeError("Provided file is not recognised!")
 
         md5_hash = FileUtils.md5_file(self.image_path)[:20]
+        print(md5_hash)
 
-        if not os.path.isfile(os.path.join(self.theme_out_path, md5_hash + ".json")):
+        if not os.path.isfile(
+            os.path.join(
+                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
+            )
+        ):
             raise FileUtils.noPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
-        with open(os.path.join(self.theme_out_path, md5_hash + ".json")) as json_data:
+        with open(
+            os.path.join(
+                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
+            )
+        ) as json_data:
             theme_data = json.load(json_data)
 
         colors = theme_data["colors"]
@@ -234,14 +256,14 @@ def get_non_generated(images, theme_dir):
     ungenerated_images = []
     theme_dir = os.path.expanduser(theme_dir)
     for i in range(len(images)):
-        md5_hash = images[i][1]
+        filename = images[i][1]
 
         if (
             len(
                 [
                     os.path.join(theme_dir, x.name)
                     for x in os.scandir(theme_dir)
-                    if md5_hash in x.name
+                    if filename in x.name
                 ]
             )
             == 0
