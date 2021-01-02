@@ -221,6 +221,32 @@ def getEngine(engine_name):
         return VibranceEngine
 
 
+def getAvaliableEngines():
+    engines = []
+    try:
+        from kadai.engine import HueEngine
+
+        engines.append("hue")
+    except:
+        pass
+
+    try:
+        from kadai.engine import VibranceEngine
+
+        engines.append("vibrance")
+    except:
+        pass
+
+    try:
+        from kadai.engine import kMeansEngine
+
+        engines.append("k_means")
+    except:
+        pass
+
+    return engines
+
+
 def createValueColorPallete(colors):
     values = [0.1, 0.3, 0.5, 0.7, 0.9]
     pallete = {}
