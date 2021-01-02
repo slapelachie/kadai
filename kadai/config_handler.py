@@ -42,6 +42,9 @@ class ConfigHandler:
                 )
             )
 
+    def update(self, config):
+        self.config = config
+
     def load(self, config_file_path):
         with open(config_file_path, "rb") as config_file:
             self.config = json.load(config_file)
