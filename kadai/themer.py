@@ -30,7 +30,7 @@ class Themer:
         self.out_path = out_path
         self.override = False
         self.run_hooks = True
-        self.engine_name = "vibrance"
+        self.engine_name = self.config["engine"]
         self.engine = getEngine(self.engine_name)
         self.cache_path = self.config["cache_directory"]
         self.theme_out_path = os.path.join(self.cache_path, "themes/")
@@ -39,8 +39,8 @@ class Themer:
         )
         self.user_templates_path = os.path.join(FileUtils.getConfigPath(), "templates/")
         self.user_hooks_path = os.path.join(FileUtils.getConfigPath(), "hooks/")
-        self.disable_progress = True
-        self.light_theme = False
+        self.disable_progress = not self.config["progress"]
+        self.light_theme = self.config["light"]
 
         FileUtils.ensure_dir_exists(self.theme_out_path)
 
@@ -76,6 +76,27 @@ class Themer:
 
     def enableLightTheme(self):
         self.light_theme = True
+
+    def getColorPallete(self):
+        theme_colors = None
+        md5_hash = FileUtils.md5_file(self.image_path)[:20]
+
+        if not os.path.isfile(os.path.join(self.theme_out_path, md5_hash + ".json")):
+            raise FileUtils.noPreGenThemeError(
+                "Theme file for this image does not exist!"
+            )
+
+        with open(os.path.join(self.theme_out_path, md5_hash + ".json")) as json_data:
+            theme_data = json.load(json_data)
+
+        colors = theme_data["colors"]
+
+        if self.light_theme:
+            theme_colors = makeLightThemeFromColors(colors)
+        else:
+            theme_colors = makeDarkThemeFromColors(colors)
+
+        return theme_colors
 
     def generate(self):
         tmp_file = "/tmp/kadai-tmp.png"
