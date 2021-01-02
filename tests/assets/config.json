@@ -1,7 +1,7 @@
 {
     "engine": "vibrance",
-    "out_directory": "$HOME/.local/share/",
-    "light_theme": true,
+    "cache_directory": "/tmp/github-runner-kadai/",
+    "light_theme": false,
     "progress": false,
     "debug": false
 }

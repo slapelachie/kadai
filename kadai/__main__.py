@@ -115,7 +115,6 @@ GNU General Public License for more details."""
         try:
             themer.update()
         except FileUtils.noPreGenThemeError:
-            print("generating...")
             themer.generate()
             themer.update()
     elif args.p:
@@ -124,8 +123,6 @@ GNU General Public License for more details."""
         engine_type = config_handler.compareFlagWithConfig(
             args.backend, config["engine"]
         )
-
-        print(last_image)
 
         if FileUtils.check_if_image(last_image):
             themer = Themer(os.readlink(last_image), config["data_directory"])
@@ -136,7 +133,6 @@ GNU General Public License for more details."""
             try:
                 themer.update()
             except FileUtils.noPreGenThemeError:
-                print("generating...")
                 themer.generate()
                 themer.update()
         else:

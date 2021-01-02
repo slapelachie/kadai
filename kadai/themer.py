@@ -122,8 +122,6 @@ class Themer:
             )
         )
 
-        print(unprocessed_images)
-
         if len(unprocessed_images) > 0:
             for i in tqdm.tqdm(
                 range(len(unprocessed_images)),
@@ -160,7 +158,6 @@ class Themer:
             raise FileUtils.noPreGenThemeError("Provided file is not recognised!")
 
         md5_hash = FileUtils.md5_file(self.image_path)[:20]
-        print(md5_hash)
 
         if not os.path.isfile(
             os.path.join(

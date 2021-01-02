@@ -4,12 +4,18 @@ import os
 from kadai.utils import FileUtils
 from kadai import themer
 from kadai.engine import HueEngine
+from kadai.config_handler import ConfigHandler
 
 out_dir = "/tmp/github-runner-kadai/"
 assets_dir = "tests/assets/"
+config_path = os.path.join(assets_dir, "config.json")
+
+configHandler = ConfigHandler()
+configHandler.setConfigFilePath(config_path)
+config = configHandler.get()
 
 
-class TestUtils(unittest.TestCase):
+class TestEngines(unittest.TestCase):
     def test_template_find(self):
         # Test if can find all 2 template files
         template_files = themer.get_template_files(
@@ -65,12 +71,14 @@ class TestUtils(unittest.TestCase):
         # Testing for generating one theme
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
 
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
+        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.generate()
 
         self.assertIs(
-            os.path.isfile(os.path.join(out_dir, "themes/31084f2c8577234aeb55.json")),
+            os.path.isfile(
+                os.path.join(out_dir, "themes/31084f2c8577234aeb55-vibrance.json")
+            ),
             True,
         )
 
@@ -78,20 +86,19 @@ class TestUtils(unittest.TestCase):
         # Testing for generating all images into themes
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
 
-        generator = themer.Themer("tests/assets/", out_dir)
+        generator = themer.Themer("tests/assets/", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.generate()
 
         self.assertTrue(
-            os.path.isfile(os.path.join(out_dir, "themes/31084f2c8577234aeb55.json"))
-        )
-        self.assertTrue(
-            os.path.isfile(os.path.join(out_dir, "themes/31084f2c8577234aeb55.json"))
+            os.path.isfile(
+                os.path.join(out_dir, "themes/31084f2c8577234aeb55-vibrance.json")
+            )
         )
 
     def test_update(self):
         # Test if update passes when theme file exists
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
+        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(True)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -103,7 +110,7 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "out")))
 
     def test_update_no_templates(self):
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
+        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(True)
         generator.setUserTemplatePath(out_dir)
@@ -111,7 +118,7 @@ class TestUtils(unittest.TestCase):
 
     def test_update_light_theme(self):
         # Test if update passes when theme file exists
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
+        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -122,7 +129,7 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
 
     def test_update_folder(self):
-        generator = themer.Themer(assets_dir, out_dir)
+        generator = themer.Themer(assets_dir, out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -133,7 +140,7 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
 
     def test_update_file_not_recognised(self):
-        generator = themer.Themer("tests/assets/test.txt", out_dir)
+        generator = themer.Themer("tests/assets/test.txt", out_dir, config=config)
         generator.setRunHooks(False)
         try:
             generator.update()
@@ -143,7 +150,7 @@ class TestUtils(unittest.TestCase):
 
     def test_update_not_find_generated(self):
         # Test if fail if theme file does not exist
-        generator = themer.Themer("tests/assets/test.jpg", out_dir)
+        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
@@ -154,7 +161,7 @@ class TestUtils(unittest.TestCase):
             pass
 
     def test_class_options(self):
-        generator = themer.Themer("tests/assets/test.png", "tmp")
+        generator = themer.Themer("tests/assets/test.png", "tmp", config=config)
 
         generator.setImagePath("tests/assets/test.jpg")
         self.assertEqual(generator.image_path, "tests/assets/test.jpg")

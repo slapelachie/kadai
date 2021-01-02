@@ -30,7 +30,7 @@ class TestConfigHandler(unittest.TestCase):
         configHandler.setConfigFilePath("tests/assets/non_config.json")
         configHandler.load("tests/assets/config.json")
 
-        self.assertEqual(configHandler.get()["light_theme"], True)
+        self.assertEqual(configHandler.get()["light_theme"], False)
 
     def test_compare_flag_with_config(self):
         configHandler = ConfigHandler()
