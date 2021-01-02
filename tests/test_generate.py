@@ -71,7 +71,9 @@ class TestEngines(unittest.TestCase):
         # Testing for generating one theme
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
 
-        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.jpg", out_path=out_dir, config=config
+        )
         generator.setCachePath(out_dir)
         generator.generate()
 
@@ -86,7 +88,7 @@ class TestEngines(unittest.TestCase):
         # Testing for generating all images into themes
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
 
-        generator = themer.Themer("tests/assets/", out_dir, config=config)
+        generator = themer.Themer("tests/assets/", out_path=out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.generate()
 
@@ -98,7 +100,9 @@ class TestEngines(unittest.TestCase):
 
     def test_update(self):
         # Test if update passes when theme file exists
-        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.jpg", out_path=out_dir, config=config
+        )
         generator.setCachePath(out_dir)
         generator.setRunHooks(True)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -110,7 +114,9 @@ class TestEngines(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "out")))
 
     def test_update_no_templates(self):
-        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.jpg", out_path=out_dir, config=config
+        )
         generator.setCachePath(out_dir)
         generator.setRunHooks(True)
         generator.setUserTemplatePath(out_dir)
@@ -118,7 +124,9 @@ class TestEngines(unittest.TestCase):
 
     def test_update_light_theme(self):
         # Test if update passes when theme file exists
-        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.jpg", out_path=out_dir, config=config
+        )
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -129,7 +137,7 @@ class TestEngines(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
 
     def test_update_folder(self):
-        generator = themer.Themer(assets_dir, out_dir, config=config)
+        generator = themer.Themer(assets_dir, out_path=out_dir, config=config)
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
@@ -140,7 +148,9 @@ class TestEngines(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
 
     def test_update_file_not_recognised(self):
-        generator = themer.Themer("tests/assets/test.txt", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.txt", out_path=out_dir, config=config
+        )
         generator.setRunHooks(False)
         try:
             generator.update()
@@ -150,7 +160,9 @@ class TestEngines(unittest.TestCase):
 
     def test_update_not_find_generated(self):
         # Test if fail if theme file does not exist
-        generator = themer.Themer("tests/assets/test.jpg", out_dir, config=config)
+        generator = themer.Themer(
+            "tests/assets/test.jpg", out_path=out_dir, config=config
+        )
         generator.setCachePath(out_dir)
         generator.setRunHooks(False)
         shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
@@ -161,7 +173,9 @@ class TestEngines(unittest.TestCase):
             pass
 
     def test_class_options(self):
-        generator = themer.Themer("tests/assets/test.png", "tmp", config=config)
+        generator = themer.Themer(
+            "tests/assets/test.png", out_path="/tmp", config=config
+        )
 
         generator.setImagePath("tests/assets/test.jpg")
         self.assertEqual(generator.image_path, "tests/assets/test.jpg")

@@ -24,7 +24,7 @@ config = configHandler.get()
 
 
 class Themer:
-    def __init__(self, image_path, out_path, config=config):
+    def __init__(self, image_path, out_path=config["data_directory"], config=config):
         self.config = config
         self.image_path = image_path
         self.out_path = out_path

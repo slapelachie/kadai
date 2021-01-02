@@ -100,7 +100,7 @@ GNU General Public License for more details."""
 
     if args.i:
         # Initialize Themer Engine
-        themer = Themer(args.i, config["data_directory"], config=config)
+        themer = Themer(args.i, config=config)
         themer.setEngine(engine_type)
         themer.setOverride(args.override)
         themer.disableProgress(not show_progress)
@@ -125,7 +125,7 @@ GNU General Public License for more details."""
         )
 
         if FileUtils.check_if_image(last_image):
-            themer = Themer(os.readlink(last_image), config["data_directory"])
+            themer = Themer(os.readlink(last_image))
             themer.setEngine(engine_type)
             if enable_light_theme:
                 themer.enableLightTheme()
