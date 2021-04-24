@@ -8,7 +8,7 @@ import random
 from kadai import log
 from kadai import config_handler
 from kadai.config_handler import ConfigHandler
-from kadai.utils import FileUtils
+from kadai.utils import file_utils
 from kadai.themer import Themer
 
 logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
@@ -90,22 +90,24 @@ GNU General Public License for more details."""
         config = configHandler.get()
 
     # Determine flags from config and cli
-    engine_type = config_handler.compareFlagWithConfig(args.backend, config["engine"])
-    show_progress = config_handler.compareFlagWithConfig(
+    engine_type = config_handler.compare_flag_with_config(
+        args.backend, config["engine"]
+    )
+    show_progress = config_handler.compare_flag_with_config(
         args.progress, config["progress"]
     )
-    enable_light_theme = config_handler.compareFlagWithConfig(
+    enable_light_theme = config_handler.compare_flag_with_config(
         args.light, config["light"]
     )
 
     if args.i:
         # Initialize Themer Engine
         themer = Themer(args.i, config=config)
-        themer.setEngine(engine_type)
-        themer.setOverride(args.override)
-        themer.disableProgress(not show_progress)
+        themer.set_engine(engine_type)
+        themer.set_override(args.override)
+        themer.disable_progress(not show_progress)
         if enable_light_theme:
-            themer.enableLightTheme()
+            themer.enable_light_theme()
 
         if args.g:
             themer.generate()
@@ -114,25 +116,25 @@ GNU General Public License for more details."""
         # If the theme file does not exist generate it and then update to it
         try:
             themer.update()
-        except FileUtils.noPreGenThemeError:
+        except file_utils.noPreGenThemeError:
             themer.generate()
             themer.update()
     elif args.p:
         # Check if the cached image exists, if it does update to that
         last_image = os.path.join(config["data_directory"], "image")
-        engine_type = config_handler.compareFlagWithConfig(
+        engine_type = config_handler.compare_flag_with_config(
             args.backend, config["engine"]
         )
 
-        if FileUtils.check_if_image(last_image):
+        if file_utils.check_if_image(last_image):
             themer = Themer(os.readlink(last_image))
-            themer.setEngine(engine_type)
+            themer.set_engine(engine_type)
             if enable_light_theme:
-                themer.enableLightTheme()
+                themer.enable_light_theme()
 
             try:
                 themer.update()
-            except FileUtils.noPreGenThemeError:
+            except file_utils.noPreGenThemeError:
                 themer.generate()
                 themer.update()
         else:
@@ -161,7 +163,7 @@ def main():
     try:
         os.makedirs(config["cache_directory"], exist_ok=True)
         os.makedirs(config["data_directory"], exist_ok=True)
-        os.makedirs(FileUtils.getConfigPath(), exist_ok=True)
+        os.makedirs(file_utils.get_config_path(), exist_ok=True)
     except:
         raise
 

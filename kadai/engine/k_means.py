@@ -2,14 +2,15 @@ from PIL import Image
 import math
 import random
 
+from kadai.engine import BaseEngine
 
-class kMeansEngine:
-    def __init__(self, image):
-        self.image = image
-        self.colors = get_colors(image)
 
+class kMeansEngine(BaseEngine):
     def generate(self):
-        return self.colors
+        return get_colors(self.image_path)
+
+    def get_dominant_color(self):
+        return self._colors[0]
 
 
 class Point:

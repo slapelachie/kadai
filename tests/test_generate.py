@@ -1,7 +1,7 @@
 import unittest
 import shutil
 import os
-from kadai.utils import FileUtils
+from kadai.utils import file_utils
 from kadai import themer
 from kadai.engine import HueEngine
 from kadai.config_handler import ConfigHandler
@@ -11,7 +11,7 @@ assets_dir = "tests/assets/"
 config_path = os.path.join(assets_dir, "config.json")
 
 configHandler = ConfigHandler()
-configHandler.setConfigFilePath(config_path)
+configHandler.set_config_path(config_path)
 config = configHandler.get()
 
 

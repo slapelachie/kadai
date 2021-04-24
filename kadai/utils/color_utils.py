@@ -1,7 +1,8 @@
 import colorsys
 from PIL import Image, ImageDraw
 
-def rgb_to_hex(color):
+
+def rgb_to_hex(color: tuple) -> str:
     """
     Convert an rgb color to hex.
 
@@ -11,7 +12,8 @@ def rgb_to_hex(color):
 
     return "#%02x%02x%02x" % (*color,)
 
-def hex_to_rgb(color):
+
+def hex_to_rgb(color: str) -> tuple:
     """
     Convert a hex color to rgb.
     Arguments:
@@ -20,17 +22,18 @@ def hex_to_rgb(color):
 
     return tuple(bytes.fromhex(color.strip("#")))
 
-def rgb_to_hsv(color):
+
+def rgb_to_hsv(color: tuple) -> tuple:
     """
     Converts from rgb to hsv
 
     Arguments:
         color (list) -- list of red, green, and blue for a color [r, g, b]
     """
-    new_cols = list(colorsys.rgb_to_hsv(*[float(x/255) for x in color]))
-    return tuple(new_cols)
+    return tuple(colorsys.rgb_to_hsv(*[float(x / 255) for x in color]))
 
-def hsv_to_rgb(color):
+
+def hsv_to_rgb(color: tuple) -> tuple:
     """
     Converts from hsv to rgb
 
@@ -39,32 +42,39 @@ def hsv_to_rgb(color):
     """
 
     color_rgb = [col for col in colorsys.hsv_to_rgb(*color)]
-    return tuple([int(col*255) for col in color_rgb])
+    return tuple([int(col * 255) for col in color_rgb])
 
-def changeHsvValue(color, value):
-    return (color[0], color[1], value)
 
-def changeHsvHue(color, hue):
+def change_hsv_hue(color: tuple, hue: int) -> tuple:
     return (hue, color[1], color[2])
 
-def changeHsvSaturation(color, saturation):
+
+def change_hsv_saturation(color: tuple, saturation: int) -> tuple:
     return (color[0], saturation, color[2])
 
-def changeHueFromRGB(color, hue):
+
+def change_hsv_value(color: tuple, value: int) -> tuple:
+    return (color[0], color[1], value)
+
+
+def change_rgb_hue(color: tuple, hue: int) -> tuple:
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hue, hsv_color[1], hsv_color[2])
     return hsv_to_rgb(hsv_color)
 
-def changeValueFromRGB(color, value):
+
+def change_rgb_value(color: tuple, value: int) -> tuple:
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hsv_color[0], hsv_color[1], value)
     return hsv_to_rgb(hsv_color)
 
-def changeSaturationFromRGB(color, saturation):
+
+def change_rgb_saturation(color: tuple, saturation: int) -> tuple:
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hsv_color[0], saturation, hsv_color[2])
     return hsv_to_rgb(hsv_color)
 
-def getHueFromRGB(color):
+
+def get_rgb_hue(color: tuple) -> int:
     hsv_color = rgb_to_hsv(color)
     return hsv_color[0]

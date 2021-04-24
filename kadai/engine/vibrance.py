@@ -2,27 +2,18 @@ import math
 import sys
 import logging
 from PIL import Image, ImageStat
-from colorthief import ColorThief
 
 from kadai import log
-from kadai.utils import ColorUtils
+from kadai.utils import color_utils
+from kadai.engine import ColorThiefEngine
 
 logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
 
 
-class VibranceEngine:
-    def __init__(self, image_path):
-        self.raw_colors = gen_colors(image_path)
-        self.image_path = image_path
-
+class VibranceEngine(ColorThiefEngine):
     def generate(self):
-        """
-        Generate the palette. Returns a list of hexidecimal colors
-
-        Arguments:
-            img (str) -- location of the image
-        """
-        return sort_colors(self.raw_colors)
+        raw_colors = self._gen_colors()
+        return sort_colors(raw_colors)
 
 
 def get_image_brightness(im_file):
@@ -46,11 +37,11 @@ def sort_by_vibrance(colors):
 
 
 def calculateVibrance(color):
-    hsv_color = [*ColorUtils.rgb_to_hsv(color)]
+    hsv_color = [*color_utils.rgb_to_hsv(color)]
     ideal_brightness = 1
 
     # Basically the closer the brightness is to the ideal brightness and
-    # the higher the saturation is the larger the output value
+    # the higher the saturation is the larger: the output value
     return hsv_color[1] * (
         2
         + (1 - ((hsv_color[2] / ideal_brightness) + (ideal_brightness / hsv_color[2])))
@@ -81,24 +72,6 @@ def sort_colors(colors):
     sorted_colors = sort_by_vibrance(colors)
     top_vibrant = sorted_colors[:7]
     return sort_to_list(top_vibrant, colors)
-
-
-def gen_colors(image_path):
-    """
-    Create a list of colors, max of 16 and min of 8
-
-    Arguments:
-            img (str) -- location of the image
-    """
-
-    color_cmd = ColorThief(image_path).get_palette
-    raw_colors = color_cmd(color_count=16, quality=3)
-
-    if len(raw_colors) <= 8:
-        logger.warn("ColorThief couldn't generate a suitable pallete")
-        return None
-
-    return raw_colors
 
 
 """

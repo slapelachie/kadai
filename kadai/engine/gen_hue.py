@@ -3,60 +3,52 @@ import colorsys
 from PIL import Image, ImageStat
 from colorthief import ColorThief
 
-from kadai.utils import ColorUtils
+from kadai.utils import color_utils
+from kadai.engine import ColorThiefEngine
 
 # Match XColors
 color_hues = (240, 0, 120, 60, 240, 300, 180)
 
 
-class HueEngine:
-    def __init__(self, image):
-        self.image = image
-        self.color = getDominantColorFromImage(image)
-
+class HueEngine(ColorThiefEngine):
     def generate(self):
-        distance = getMinDistanceFromHues(self.color)
-        base_colors = shiftHuesByDistance(generateBaseColors(self.color), distance)
+        dominant_color = self._get_dominant_color()
+        distance = get_min_distance_hues(dominant_color)
+        base_colors = shift_hues_distance(
+            generate_base_colors(dominant_color), distance
+        )
         return base_colors
 
 
-def generateBaseColors(color):
+def generate_base_colors(color):
     new_colors = []
     for i in range(len(color_hues)):
-        hsv_color = ColorUtils.rgb_to_hsv(color)
-        hsv_color = ColorUtils.changeHsvHue(hsv_color, float(color_hues[i] / 360))
+        hsv_color = color_utils.rgb_to_hsv(color)
+        hsv_color = color_utils.change_hsv_hue(hsv_color, float(color_hues[i] / 360))
         if hsv_color[1] < 0.4:
-            hsv_color = ColorUtils.changeHsvSaturation(hsv_color, 0.4)
-        new_colors.append(ColorUtils.hsv_to_rgb(hsv_color))
+            hsv_color = color_utils.change_hsv_saturation(hsv_color, 0.4)
+        new_colors.append(color_utils.hsv_to_rgb(hsv_color))
     return new_colors
 
 
-def getDominantColorFromImage(image_path):
-    color_cmd = ColorThief(image_path).get_palette
-    raw_colors = color_cmd(color_count=2, quality=3)
-    return ColorUtils.hsv_to_rgb(
-        ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.7)
-    )
-
-
-def shiftHuesByDistance(colors, distance):
+def shift_hues_distance(colors, distance):
     new_colors = []
     for color in colors:
-        hsv_color = ColorUtils.rgb_to_hsv(color)
+        hsv_color = color_utils.rgb_to_hsv(color)
         new_hue = hsv_color[0] + distance
         if new_hue >= 1:
             new_hue = new_hue - 1
         elif new_hue < 0:
             new_hue = new_hue + 1
-        new_colors.append(ColorUtils.changeHueFromRGB(color, new_hue))
+        new_colors.append(color_utils.change_rgb_hue(color, new_hue))
     return new_colors
 
 
-def getMinDistanceFromHues(color):
+def get_min_distance_hues(color):
     distances = []
     distances_positive = []
     for color_hue in color_hues:
-        hsv_color = ColorUtils.rgb_to_hsv(color)
+        hsv_color = color_utils.rgb_to_hsv(color)
 
         distance = color_hue - (hsv_color[0] * 360)
         distances.append(distance)

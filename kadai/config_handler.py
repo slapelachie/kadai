@@ -2,17 +2,19 @@ import copy
 import os
 import json
 import pickle
-from kadai.utils import FileUtils
+from kadai.utils import file_utils
 
 
 class ConfigHandler:
     def __init__(self):
-        self.config_file_path = os.path.join(FileUtils.getConfigPath(), "config.json")
+        self.config_file_path = os.path.join(
+            file_utils.get_config_path(), "config.json"
+        )
         self.config_file_out_path = self.config_file_path
         self.config_default = {
             "engine": "vibrance",
-            "data_directory": FileUtils.getDataPath(),
-            "cache_directory": FileUtils.getCachePath(),
+            "data_directory": file_utils.get_data_path(),
+            "cache_directory": file_utils.get_cache_path(),
             "light": False,
             "progress": False,
             "debug": False,
@@ -20,17 +22,17 @@ class ConfigHandler:
 
         self.config = parse_config(self.config_default, self.config_file_path)
 
-    def setConfigFilePath(self, path):
+    def set_config_path(self, path: str) -> None:
         self.config_file_path = path
         self.config = parse_config(self.config_default, self.config_file_path)
 
-    def setConfigFileOutPath(self, path):
+    def set_config_file_out_path(self, path: str) -> None:
         self.config_file_out_path = path
 
-    def get(self):
+    def get(self) -> dict:
         return self.config
 
-    def save(self):
+    def save(self) -> None:
         config_path = os.path.dirname(self.config_file_out_path)
         if not os.path.isdir(config_path):
             os.mkdir(config_path)
@@ -42,22 +44,22 @@ class ConfigHandler:
                 )
             )
 
-    def update(self, config):
+    def update(self, config: dict) -> None:
         self.config = config
 
-    def load(self, config_file_path):
+    def load(self, config_file_path: str) -> None:
         with open(config_file_path, "rb") as config_file:
             self.config = json.load(config_file)
 
 
-def compareFlagWithConfig(flag, config_option):
+def compare_flag_with_config(flag, config_option):
     if flag:
         return flag
     else:
         return config_option
 
 
-def parse_config(config_default, config_file_path):
+def parse_config(config_default: dict, config_file_path: str) -> dict:
     config = copy.copy(config_default)
 
     try:

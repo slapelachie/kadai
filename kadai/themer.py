@@ -8,8 +8,9 @@ import errno
 from colorthief import ColorThief
 from PIL import Image
 
-from kadai.utils import FileUtils, ColorUtils
+from kadai.utils import file_utils, color_utils
 from kadai.config_handler import ConfigHandler
+from kadai.engine import BaseEngine
 from kadai import log
 
 logger = log.setup_logger(
@@ -31,62 +32,64 @@ class Themer:
         self.override = False
         self.run_hooks = True
         self.engine_name = self.config["engine"]
-        self.engine = getEngine(self.engine_name)
+        self.engine = get_engine(self.engine_name)
         self.cache_path = self.config["cache_directory"]
         self.theme_out_path = os.path.join(self.cache_path, "themes/")
         self.template_path = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), "data/template.json"
         )
-        self.user_templates_path = os.path.join(FileUtils.getConfigPath(), "templates/")
-        self.user_hooks_path = os.path.join(FileUtils.getConfigPath(), "hooks/")
-        self.disable_progress = not self.config["progress"]
+        self.user_templates_path = os.path.join(
+            file_utils.get_config_path(), "templates/"
+        )
+        self.user_hooks_path = os.path.join(file_utils.get_config_path(), "hooks/")
+        self.progress = self.config["progress"]
         self.light_theme = self.config["light"]
 
-        FileUtils.ensure_dir_exists(self.theme_out_path)
+        file_utils.ensure_dir_exists(self.theme_out_path)
 
-    def setImagePath(self, path):
+    def set_image_path(self, path):
         self.image_path = path
 
-    def setOutPath(self, path):
+    def set_out_path(self, path):
         self.out_path = path
 
-    def setCachePath(self, path):
+    def set_cache_path(self, path):
         self.cache_path = path
         self.theme_out_path = os.path.join(self.cache_path, "themes/")
-        FileUtils.ensure_dir_exists(self.theme_out_path)
+        file_utils.ensure_dir_exists(self.theme_out_path)
 
-    def setEngine(self, engine_name):
+    def set_engine(self, engine_name):
         self.engine_name = engine_name
-        self.engine = getEngine(engine_name)
+        self.engine = get_engine(engine_name)
 
-    def setOverride(self, state):
+    def set_override(self, state):
         self.override = state
 
-    def setUserTemplatePath(self, path):
+    def set_user_template_path(self, path):
         self.user_templates_path = path
 
-    def setUserHooksPath(self, path):
+    def set_user_hooks_path(self, path):
         self.user_hooks_path = path
 
-    def setRunHooks(self, condition):
+    def set_run_hooks(self, condition):
         self.run_hooks = condition
 
-    def disableProgress(self, condition):
-        self.disable_progress = condition
+    def disable_progress(self, condition):
+        self.progress = condition
 
-    def enableLightTheme(self):
+    def enable_light_theme(self):
         self.light_theme = True
 
-    def getColorPallete(self):
+    def get_color_palette(self):
         theme_colors = None
-        md5_hash = FileUtils.md5_file(self.image_path)[:20]
+        md5_hash = file_utils.md5_file(self.image_path)[:20]
 
         if not os.path.isfile(
             os.path.join(
                 self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
             )
         ):
-            raise FileUtils.noPreGenThemeError(
+            raise file_utils.noPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
@@ -100,9 +103,9 @@ class Themer:
         colors = theme_data["colors"]
 
         if self.light_theme:
-            theme_colors = makeLightThemeFromColors(colors)
+            theme_colors = colors["light"]
         else:
-            theme_colors = makeDarkThemeFromColors(colors)
+            theme_colors = colors["dark"]
 
         return theme_colors
 
@@ -110,8 +113,8 @@ class Themer:
         tmp_file = "/tmp/kadai-tmp.png"
 
         image_path_name = [
-            [i, "{}-{}".format(FileUtils.md5_file(i)[:20], self.engine_name)]
-            for i in FileUtils.get_image_list(self.image_path)
+            [i, "{}-{}".format(file_utils.md5_file(i)[:20], self.engine_name)]
+            for i in file_utils.get_image_list(self.image_path)
         ]
         unprocessed_images = (
             image_path_name
@@ -126,7 +129,7 @@ class Themer:
             for i in tqdm.tqdm(
                 range(len(unprocessed_images)),
                 bar_format=log.bar_format,
-                disable=self.disable_progress,
+                disable=self.progress,
             ):
                 image = unprocessed_images[i][0]
                 filename = unprocessed_images[i][1]
@@ -134,8 +137,9 @@ class Themer:
 
                 create_tmp_image(image, tmp_file)
 
-                colors = self.engine(tmp_file).generate()
-                pallete = createValueColorPallete(colors)
+                color_engine = self.engine(tmp_file)
+                palette = color_engine.get_palette()
+                dominant_color = color_engine.get_dominant_color()
 
                 tqdm_logger.log(
                     15,
@@ -144,27 +148,29 @@ class Themer:
                     ),
                 )
 
-                createTemplateFromPallete(pallete, str(image), out_file)
+                create_template_from_palette(
+                    palette, dominant_color, str(image), out_file
+                )
                 # with open(self.template_path) as template_file:
         else:
             logger.info("No themes to generate.")
 
     def update(self):
         if os.path.isdir(self.image_path):
-            images = FileUtils.get_image_list(self.image_path)
+            images = file_utils.get_image_list(self.image_path)
             random.shuffle(images)
             self.image_path = images[0]
         elif not os.path.isfile(self.image_path):
-            raise FileUtils.noPreGenThemeError("Provided file is not recognised!")
+            raise file_utils.noPreGenThemeError("Provided file is not recognised!")
 
-        md5_hash = FileUtils.md5_file(self.image_path)[:20]
+        md5_hash = file_utils.md5_file(self.image_path)[:20]
 
         if not os.path.isfile(
             os.path.join(
                 self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
             )
         ):
-            raise FileUtils.noPreGenThemeError(
+            raise file_utils.noPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
@@ -180,9 +186,9 @@ class Themer:
         wallpaper = theme_data["wallpaper"]
 
         if self.light_theme:
-            theme_colors = makeLightThemeFromColors(colors)
+            theme_colors = colors["light"]
         else:
-            theme_colors = makeDarkThemeFromColors(colors)
+            theme_colors = colors["dark"]
 
         try:
             templates = get_template_files(self.user_templates_path)
@@ -190,23 +196,23 @@ class Themer:
             for template in templates:
                 template_path = os.path.join(self.user_templates_path, template)
                 out_file = os.path.join(self.out_path, template[:-5])
-                createFileFromTemplate(
+                create_file_from_template(
                     template_path, out_file, theme_colors, primary_color
                 )
         except FileNotFoundError:
             tqdm_logger.warn("No templates files found...")
 
         # Link wallpaper to cache folder
-        linkWallpaperPathInFolder(wallpaper, self.out_path)
+        link_wallpaper_path(wallpaper, self.out_path)
 
         # Run external scripts
         if self.run_hooks:
-            FileUtils.run_hooks(
+            file_utils.run_hooks(
                 light_theme=self.light_theme, hooks_dir=self.user_hooks_path
             )
 
 
-def getEngine(engine_name):
+def get_engine(engine_name: str) -> BaseEngine:
     if engine_name == "hue":
         from kadai.engine import HueEngine
 
@@ -221,7 +227,7 @@ def getEngine(engine_name):
         return VibranceEngine
 
 
-def getAvaliableEngines():
+def get_avaliable_engines():
     engines = []
     try:
         from kadai.engine import HueEngine
@@ -245,24 +251,6 @@ def getAvaliableEngines():
         pass
 
     return engines
-
-
-def createValueColorPallete(colors):
-    values = [0.1, 0.3, 0.5, 0.7, 0.9]
-    pallete = {}
-    for i in range(len(colors)):
-        color_value_dictionary = createValueSpreadDictionary(values, colors[i])
-        pallete["color{}".format(i)] = color_value_dictionary
-    return pallete
-
-
-def createValueSpreadDictionary(values, color):
-    pallete = {}
-    for value in values:
-        pallete[str(value)] = ColorUtils.rgb_to_hex(
-            ColorUtils.changeValueFromRGB(color, value)
-        )
-    return pallete
 
 
 def get_template_files(template_dir):
@@ -296,14 +284,14 @@ def get_non_generated(images, theme_dir):
     return ungenerated_images
 
 
-def clearAndWriteDataToFile(file_path, data):
+def clear_write_data_to_file(file_path, data):
     if os.path.isfile(file_path):
         open(os.path.expanduser(file_path), "w").close()
     with open(os.path.expanduser(file_path), "a") as file:
         file.write(data)
 
 
-def clearAndWriteJsonToFile(file_path, json_data):
+def clear_write_json_to_file(file_path, json_data):
     if os.path.isfile(file_path):
         open(os.path.expanduser(file_path), "w").close()
     with open(os.path.expanduser(file_path), "wb") as file:
@@ -312,14 +300,13 @@ def clearAndWriteJsonToFile(file_path, json_data):
         )
 
 
-def createTemplateFromPallete(pallete, image_path, out_path):
+def create_template_from_palette(palette, dominant_color, image_path, out_path):
     file_contents = {}
-    domiant_color = getDominantColorFromImage(image_path)
-    file_contents["colors"] = pallete
+    file_contents["colors"] = palette
     file_contents["wallpaper"] = image_path
-    file_contents["primary"] = domiant_color
+    file_contents["primary"] = dominant_color
 
-    clearAndWriteJsonToFile(out_path, file_contents)
+    clear_write_json_to_file(out_path, file_contents)
 
 
 def create_tmp_image(image, path):
@@ -328,7 +315,7 @@ def create_tmp_image(image, path):
     image_out.save(path)
 
 
-def modifyFiledataWithTemplate(filedata, colors, primary_color):
+def modify_file_with_template(filedata, colors, primary_color):
     # Change placeholder values
     for i in range(len(colors)):
         filedata = filedata.replace(
@@ -344,7 +331,7 @@ def modifyFiledataWithTemplate(filedata, colors, primary_color):
     return filedata
 
 
-def linkWallpaperPathInFolder(wallpaper, folder_path):
+def link_wallpaper_path(wallpaper, folder_path):
     image_symlink = os.path.join(folder_path, "image")
 
     try:
@@ -357,88 +344,12 @@ def linkWallpaperPathInFolder(wallpaper, folder_path):
             raise e
 
 
-def getDominantColorFromImage(image_path):
-    tmp_image_path = "/tmp/kadai-tmp.png"
-    create_tmp_image(image_path, tmp_image_path)
-    color_cmd = ColorThief(tmp_image_path).get_palette
-    raw_colors = color_cmd(color_count=2, quality=3)
-    return ColorUtils.rgb_to_hex(
-        ColorUtils.hsv_to_rgb(
-            ColorUtils.changeHsvValue(ColorUtils.rgb_to_hsv(raw_colors[0]), 0.6)
-        )
-    )
-
-
-def createFileFromTemplate(template_path, out_file, colors, primary_color):
+def create_file_from_template(template_path, out_file, colors, primary_color):
     with open(template_path) as template_file:
         filedata = template_file.read()
-        filedata = modifyFiledataWithTemplate(filedata, colors, primary_color)
+        filedata = modify_file_with_template(filedata, colors, primary_color)
 
-        clearAndWriteDataToFile(out_file, filedata)
-
-
-def makeLightThemeFromColors(colors):
-    new_colors = {}
-    new_colors["color0"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.9"]), 0.05
-        )
-    )
-    new_colors["color7"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.3"]), 0.2
-        )
-    )
-    new_colors["color8"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.7"]), 0.05
-        )
-    )
-    new_colors["color15"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.1"]), 0.2
-        )
-    )
-    for i in range(6):
-        new_colors["color{}".format(str(i + 1))] = colors["color{}".format(str(1 + i))][
-            "0.5"
-        ]
-        new_colors["color{}".format(str(i + 9))] = colors["color{}".format(str(1 + i))][
-            "0.3"
-        ]
-    return new_colors
-
-
-def makeDarkThemeFromColors(colors):
-    new_colors = {}
-    new_colors["color0"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.1"]), 0.2
-        )
-    )
-    new_colors["color7"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.7"]), 0.05
-        )
-    )
-    new_colors["color8"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.3"]), 0.2
-        )
-    )
-    new_colors["color15"] = ColorUtils.rgb_to_hex(
-        ColorUtils.changeSaturationFromRGB(
-            ColorUtils.hex_to_rgb(colors["color0"]["0.9"]), 0.05
-        )
-    )
-    for i in range(6):
-        new_colors["color{}".format(str(i + 1))] = colors["color{}".format(str(1 + i))][
-            "0.7"
-        ]
-        new_colors["color{}".format(str(i + 9))] = colors["color{}".format(str(1 + i))][
-            "0.9"
-        ]
-    return new_colors
+        clear_write_data_to_file(out_file, filedata)
 
 
 """

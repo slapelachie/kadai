@@ -9,21 +9,21 @@ class noPreGenThemeError(Exception):
     pass
 
 
-def getDataPath():
+def get_data_path():
     if "XDG_DATA_HOME" in os.environ:
         return os.path.join(os.getenv("XDG_DATA_HOME"), "kadai")
     else:
         return os.path.expanduser("~/.local/share/kadai")
 
 
-def getCachePath():
+def get_cache_path():
     if "XDG_CACHE_HOME" in os.environ:
         return os.path.join(os.getenv("XDG_CACHE_HOME"), "kadai")
     else:
         return os.path.expanduser("~/.cache/kadai")
 
 
-def getConfigPath():
+def get_config_path():
     if "XDG_CONFIG_HOME" in os.environ:
         return os.path.join(os.getenv("XDG_CONFIG_HOME"), "kadai")
     else:
@@ -58,10 +58,7 @@ def md5_file(fname):
 
 
 def ensure_dir_exists(directory):
-    try:
-        os.makedirs(directory, exist_ok=True)
-    except:
-        raise
+    os.makedirs(directory, exist_ok=True)
 
 
 def get_image(image):
@@ -105,22 +102,19 @@ def get_image_list(image_path):
         if check_if_image(image_path):
             return [get_image(image_path)]
         else:
-            raise "Specified file is not an image!"
+            raise ValueError("Specified file is not an image!")
     elif os.path.isdir(image_path):
         images = get_dir_imgs(image_path)
         if len(images) == 0:
-            raise "Specified directory does not contain any images!"
+            raise FileNotFoundError("Specified directory does not contain any images!")
 
         return images
     else:
         raise ValueError("Unknown file type!")
 
 
-def get_hooks(hooks_dir=os.path.join(getConfigPath(), "hooks")):
-    try:
-        os.makedirs(hooks_dir, exist_ok=True)
-    except:
-        raise
+def get_hooks(hooks_dir=os.path.join(get_config_path(), "hooks")):
+    os.makedirs(hooks_dir, exist_ok=True)
 
     scripts = [
         f
@@ -132,7 +126,7 @@ def get_hooks(hooks_dir=os.path.join(getConfigPath(), "hooks")):
     return scripts
 
 
-def run_hooks(light_theme=False, hooks_dir=os.path.join(getConfigPath(), "hooks")):
+def run_hooks(light_theme=False, hooks_dir=os.path.join(get_config_path(), "hooks")):
     scripts = get_hooks(hooks_dir)
 
     for script in scripts:
