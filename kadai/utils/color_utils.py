@@ -46,30 +46,42 @@ def hsv_to_rgb(color: tuple) -> tuple:
 
 
 def change_hsv_hue(color: tuple, hue: int) -> tuple:
+    if not hue:
+        return color
     return (hue, color[1], color[2])
 
 
 def change_hsv_saturation(color: tuple, saturation: int) -> tuple:
+    if not saturation:
+        return color
     return (color[0], saturation, color[2])
 
 
 def change_hsv_value(color: tuple, value: int) -> tuple:
+    if not value:
+        return color
     return (color[0], color[1], value)
 
 
 def change_rgb_hue(color: tuple, hue: int) -> tuple:
+    if not hue:
+        return color
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hue, hsv_color[1], hsv_color[2])
     return hsv_to_rgb(hsv_color)
 
 
 def change_rgb_value(color: tuple, value: int) -> tuple:
+    if not value:
+        return color
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hsv_color[0], hsv_color[1], value)
     return hsv_to_rgb(hsv_color)
 
 
 def change_rgb_saturation(color: tuple, saturation: int) -> tuple:
+    if not saturation:
+        return color
     hsv_color = rgb_to_hsv(color)
     hsv_color = (hsv_color[0], saturation, hsv_color[2])
     return hsv_to_rgb(hsv_color)

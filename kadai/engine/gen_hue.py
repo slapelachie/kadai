@@ -12,7 +12,7 @@ color_hues = (240, 0, 120, 60, 240, 300, 180)
 
 class HueEngine(ColorThiefEngine):
     def generate(self):
-        dominant_color = self._get_dominant_color()
+        dominant_color = self.get_dominant_color()
         distance = get_min_distance_hues(dominant_color)
         base_colors = shift_hues_distance(
             generate_base_colors(dominant_color), distance

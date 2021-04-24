@@ -139,7 +139,9 @@ class Themer:
 
                 color_engine = self.engine(tmp_file)
                 palette = color_engine.get_palette()
-                dominant_color = color_engine.get_dominant_color()
+                dominant_color = color_utils.rgb_to_hex(
+                    color_engine.get_dominant_color()
+                )
 
                 tqdm_logger.log(
                     15,
@@ -217,6 +219,14 @@ def get_engine(engine_name: str) -> BaseEngine:
         from kadai.engine import HueEngine
 
         return HueEngine
+    elif engine_name == "pastel":
+        from kadai.engine import PastelEngine
+
+        return PastelEngine
+    elif engine_name == "pastel_hue":
+        from kadai.engine import PastelHueEngine
+
+        return PastelHueEngine
     elif engine_name == "k_means":
         from kadai.engine import kMeansEngine
 

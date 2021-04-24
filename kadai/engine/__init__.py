@@ -4,6 +4,7 @@ from kadai.engine.vibrance import VibranceEngine
 from kadai.engine.gen_hue import HueEngine
 from kadai.engine.k_means import kMeansEngine
 from kadai.engine.pastel import PastelEngine
+from kadai.engine.pastel import PastelHueEngine
 
 """
 kadai - Simple wallpaper manager for tiling window managers.
