@@ -30,5 +30,4 @@ class PastelEngine(VibranceEngine):
 
 
 class PastelHueEngine(HueEngine, PastelEngine):
-    def generate(self):
-        return super().generate()
+    pass
