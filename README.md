@@ -27,7 +27,7 @@ optional arguments:
   -p                Use last set theme
   --override        Override exisiting themes
   --clear           Clear all data relating to KADAI
-  --backend         Switches to a different backend (hue/vibrance/k_means)
+  --backend         Switches to a different backend (hue/vibrance/pastel/pastel_hue)
   --progress        Shows the progress of the command
   --warrenty        Shows the programs warrenty
   --light           Switch to using a light theme varient
@@ -80,7 +80,6 @@ There are multiple different backends currently supported which change the way t
 |----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | hue      | For hue based generation. The generator picks the most dominant color  and generates the other colors based off of that to compliment it. This stops the unknown color problem where you don't know which color is which in X |
 | vibrance | Generates colors by choosing the top 16 most dominant colors and sorting them into the top 7 most vibrant colors                                                                                                              |
-| k_means  | An experimental backend that uses k-means to find the most dominant colors, the output is very similar to vibrance backend                                                                                                    |
 
 
 ## Installation

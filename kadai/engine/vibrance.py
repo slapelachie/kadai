@@ -11,19 +11,19 @@ logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.W
 
 
 class VibranceEngine(ColorThiefEngine):
-    def generate(self):
+    def generate(self) -> None:
         raw_colors = self._gen_colors()
         return sort_colors(raw_colors)
 
 
-def get_image_brightness(im_file):
-    im = Image.open(im_file)
-    stat = ImageStat.Stat(im)
+def get_image_brightness(image_path: str) -> tuple:
+    image = Image.open(image_path)
+    stat = ImageStat.Stat(image)
     r, g, b = stat.mean
     return math.sqrt(0.299 * (r ** 2) + 0.587 * (g ** 2) + 0.114 * (b ** 2))
 
 
-def sort_by_vibrance(colors):
+def sort_by_vibrance(colors: list) -> list:
     """
     Sorts the colors by their vibrance (saturation * brightness(value))
 
@@ -31,12 +31,12 @@ def sort_by_vibrance(colors):
             colors (list) -- list of rgb colors
     """
 
-    hsv_distance = calculateVibranceFromList(colors)
-    adj_colors = sorted(hsv_distance, key=lambda x: abs(x[1] - 1))
-    return [i[0] for i in adj_colors]
+    hsv_vibrances = calculate_vibrance_with_list(colors)
+    adjusted_colors = sorted(hsv_vibrances, key=lambda x: abs(x[1] - 1))
+    return [i[0] for i in adjusted_colors]
 
 
-def calculateVibrance(color):
+def calculate_vibrance(color: tuple) -> float:
     hsv_color = [*color_utils.rgb_to_hsv(color)]
     ideal_brightness = 1
 
@@ -48,19 +48,19 @@ def calculateVibrance(color):
     )
 
 
-def calculateVibranceFromList(colors):
-    hsv_distance = []
+def calculate_vibrance_with_list(colors: list) -> list:
+    hsv_vibrances = []
     for i in range(len(colors)):
-        vibrance = calculateVibrance(colors[i])
-        hsv_distance.append([colors[i], vibrance])
-    return hsv_distance
+        vibrance = calculate_vibrance(colors[i])
+        hsv_vibrances.append([colors[i], vibrance])
+    return hsv_vibrances
 
 
-def sort_to_list(colors, color_list):
+def sort_to_list(colors: list, color_list: list) -> list:
     return [i for i in color_list if i in colors]
 
 
-def sort_colors(colors):
+def sort_colors(colors: list) -> list:
     """
     Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 8)
 

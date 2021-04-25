@@ -17,6 +17,18 @@ configHandler = ConfigHandler()
 configHandler.save()
 config = configHandler.get()
 
+WARRENTY = """Copyright (C) 2020 slapelachie
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details."""
+
 
 def get_args():
     """ Get the args parsed from the command line and does arg handling stuff """
@@ -45,7 +57,7 @@ def get_args():
         "--clear", action="store_true", help="Clear all data relating to KADAI"
     )
 
-    arg.add_argument("--backend", metavar="name", help="vibrance/hue/k_means")
+    arg.add_argument("--backend", metavar="name", help="vibrance/hue/pastel/pastel_hue")
 
     arg.add_argument(
         "--progress", action="store_true", help="Show progress of theme generation"
@@ -69,22 +81,9 @@ def parse_args(parser):
         sys.exit(1)
 
     if args.warranty:
-        print(
-            """Copyright (C) 2020 slapelachie
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details."""
-        )
+        print(WARRENTY)
         exit(0)
 
-    VERBOSE_MODE = True if args.v else False
     if args.c:
         configHandler.load(args.c)
         config = configHandler.get()

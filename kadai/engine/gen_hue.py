@@ -23,11 +23,13 @@ class HueEngine(ColorThiefEngine):
 def generate_base_colors(color):
     new_colors = []
     for i in range(len(color_hues)):
-        hsv_color = color_utils.rgb_to_hsv(color)
-        hsv_color = color_utils.change_hsv_hue(hsv_color, float(color_hues[i] / 360))
+        hsv_color = color_utils.change_hsv_hue(
+            color_utils.rgb_to_hsv(color), float(color_hues[i] / 360)
+        )
         if hsv_color[1] < 0.4:
             hsv_color = color_utils.change_hsv_saturation(hsv_color, 0.4)
         new_colors.append(color_utils.hsv_to_rgb(hsv_color))
+
     return new_colors
 
 
@@ -40,6 +42,7 @@ def shift_hues_distance(colors, distance):
             new_hue = new_hue - 1
         elif new_hue < 0:
             new_hue = new_hue + 1
+
         new_colors.append(color_utils.change_rgb_hue(color, new_hue))
     return new_colors
 

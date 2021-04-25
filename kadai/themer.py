@@ -227,10 +227,6 @@ def get_engine(engine_name: str) -> BaseEngine:
         from kadai.engine import PastelHueEngine
 
         return PastelHueEngine
-    elif engine_name == "k_means":
-        from kadai.engine import kMeansEngine
-
-        return kMeansEngine
     else:
         from kadai.engine import VibranceEngine
 
@@ -250,13 +246,6 @@ def get_avaliable_engines():
         from kadai.engine import VibranceEngine
 
         engines.append("vibrance")
-    except:
-        pass
-
-    try:
-        from kadai.engine import kMeansEngine
-
-        engines.append("k_means")
     except:
         pass
 
