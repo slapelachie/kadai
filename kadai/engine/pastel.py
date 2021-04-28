@@ -15,10 +15,10 @@ class PastelEngine(VibranceEngine):
         dark_color_saturations = (0.2, 0.05, 0.4)
         light_color_saturations = (0.5, 0.2, 0.4)
 
-        dark_colors = self._make_pallete(
+        dark_colors = self._make_palette(
             self._colors, dark_color_values, dark_color_saturations
         )
-        light_colors = self._make_pallete(
+        light_colors = self._make_palette(
             self._colors, light_color_values, light_color_saturations
         )
         return {"dark": dark_colors, "light": light_colors}

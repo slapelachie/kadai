@@ -7,8 +7,8 @@ class BaseEngine:
         Arguments:
             image_path (str): The path to the image
         """
-        self.image_path = image_path
-        self._colors = self.generate()
+        self._image_path = image_path
+        self._colors = None
 
     def generate(self) -> list:
         """
@@ -39,15 +39,15 @@ class BaseEngine:
         dark_color_saturations = (0.2, 0.05, None)
         light_color_saturations = (0.5, 0.2, None)
 
-        dark_colors = self._make_pallete(
+        dark_colors = self._make_palette(
             self._colors, dark_color_values, dark_color_saturations
         )
-        light_colors = self._make_pallete(
+        light_colors = self._make_palette(
             self._colors, light_color_values, light_color_saturations
         )
         return {"dark": dark_colors, "light": light_colors}
 
-    def _make_pallete(self, colors: tuple, values: tuple, saturations: tuple) -> dict:
+    def _make_palette(self, colors: tuple, values: tuple, saturations: tuple) -> dict:
         """
         Makes a palette that allows modifications to the values and saturation
         Mainly used for xresources and hence uses color 0-15
@@ -92,7 +92,7 @@ def modify_rgb_value_saturation(color: tuple, value: float, saturation: float) -
         saturation (float): what to change the saturation to
 
     Returns:
-        (tuple): The modified rgb value
+        (string): The outputed hex value
     """
     return color_utils.rgb_to_hex(
         color_utils.change_rgb_saturation(

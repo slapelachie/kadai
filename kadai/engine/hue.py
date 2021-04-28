@@ -7,7 +7,7 @@ from kadai.utils import color_utils
 from kadai.engine import ColorThiefEngine
 
 # Match XColors
-color_hues = (240, 0, 120, 60, 240, 300, 180)
+COLOR_HUES = (240, 0, 120, 60, 240, 300, 180)
 
 
 class HueEngine(ColorThiefEngine):
@@ -22,9 +22,9 @@ class HueEngine(ColorThiefEngine):
 
 def generate_base_colors(color):
     new_colors = []
-    for i in range(len(color_hues)):
+    for i in range(len(COLOR_HUES)):
         hsv_color = color_utils.change_hsv_hue(
-            color_utils.rgb_to_hsv(color), float(color_hues[i] / 360)
+            color_utils.rgb_to_hsv(color), float(COLOR_HUES[i] / 360)
         )
         if hsv_color[1] < 0.4:
             hsv_color = color_utils.change_hsv_saturation(hsv_color, 0.4)
@@ -47,10 +47,10 @@ def shift_hues_distance(colors, distance):
     return new_colors
 
 
-def get_min_distance_hues(color):
+def get_min_distance_hues(color: tuple) -> float:
     distances = []
     distances_positive = []
-    for color_hue in color_hues:
+    for color_hue in COLOR_HUES:
         hsv_color = color_utils.rgb_to_hsv(color)
 
         distance = color_hue - (hsv_color[0] * 360)
@@ -58,7 +58,7 @@ def get_min_distance_hues(color):
         distances_positive.append(abs(distance))
 
     min_distance_pos = distances_positive.index(min(distances_positive))
-    return distances[min_distance_pos] / 360
+    return float(distances[min_distance_pos] / 360)
 
 
 """

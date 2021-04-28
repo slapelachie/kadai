@@ -16,13 +16,6 @@ class VibranceEngine(ColorThiefEngine):
         return sort_colors(raw_colors)
 
 
-def get_image_brightness(image_path: str) -> tuple:
-    image = Image.open(image_path)
-    stat = ImageStat.Stat(image)
-    r, g, b = stat.mean
-    return math.sqrt(0.299 * (r ** 2) + 0.587 * (g ** 2) + 0.114 * (b ** 2))
-
-
 def sort_by_vibrance(colors: list) -> list:
     """
     Sorts the colors by their vibrance (saturation * brightness(value))
