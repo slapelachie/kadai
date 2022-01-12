@@ -22,7 +22,6 @@ import logging
 import shutil
 
 from kadai import log
-from kadai import config_handler
 from kadai.config_handler import ConfigHandler
 from kadai.utils import file_utils
 from kadai.themer import Themer
@@ -49,46 +48,45 @@ def get_args():
 
     arg = argparse.ArgumentParser(description="Generate and switch wallpaper themes")
 
-    arg.add_argument("-v", action="store_true", help="Verbose Logging")
-
-    arg.add_argument("-g", action="store_true", help="generate themes")
-
-    arg.add_argument("-i", metavar='"path/to/dir"', help="the input file")
-
-    arg.add_argument("-p", action="store_true", help="Use last set theme")
-
+    arg.add_argument("-v", "--verbose", action="store_true", help="Verbose Logging")
+    arg.add_argument("-g", "--generate", action="store_true", help="generate themes")
+    arg.add_argument("-i", "--input", metavar='"path/to/dir"', help="the input file")
+    arg.add_argument("-p", "--preserve", action="store_true", help="Use last set theme")
     arg.add_argument(
         "-c",
+        "--config",
         metavar='"path/to/config"',
         help="Custom config file at a different location",
     )
-
     arg.add_argument(
         "--override", action="store_true", help="Override exisiting themes"
     )
-
     arg.add_argument(
         "--clear", action="store_true", help="Clear all data relating to KADAI"
     )
-
     arg.add_argument("--backend", metavar="name", help="vibrance/hue/pastel/pastel_hue")
-
     arg.add_argument(
         "--progress", action="store_true", help="Show progress of theme generation"
     )
-
     arg.add_argument(
         "--warranty", action="store_true", help="Show the programs warranty"
     )
-
     arg.add_argument("--light", action="store_true", help="Enable light theme")
 
     return arg
 
 
-def parse_args(parser: argparse.ArgumentParser, config_object: ConfigHandler):
+# pylint: disable=too-many-branches
+def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
+    """
+    Arguments are parsed here
+
+    Arguments:
+        parser (argparse.ArgumentParser): the parser object
+        config_handler (kadai.ConfigHandler): the config handler
+    """
     args = parser.parse_args()
-    config = config_object.get()
+    config = config_handler.get()
     logger = log.setup_logger(
         __name__, log.defaultLoggingHandler(), level=logging.WARNING
     )
@@ -101,41 +99,7 @@ def parse_args(parser: argparse.ArgumentParser, config_object: ConfigHandler):
         print(WARRANTY)
         sys.exit(0)
 
-    if args.c:
-        config_object.load(args.c)
-        config = config_object.get()
-
-    # Determine flags from config and cli
-    engine_type = config_handler.compare_flag_with_config(
-        args.backend, config["engine"]
-    )
-    show_progress = config_handler.compare_flag_with_config(
-        args.progress, config["progress"]
-    )
-    enable_light_theme = config_handler.compare_flag_with_config(
-        args.light, config["light"]
-    )
-
-    if args.i:
-        generate_theme(
-            args.i,
-            config,
-            {
-                "engine_type": engine_type,
-                "override": args.override,
-                "show_progress": show_progress,
-                "enable_light_theme": enable_light_theme,
-            },
-            args.g,
-        )
-    elif args.p:
-        try:
-            load_last_theme(config, args.backend, enable_light_theme)
-        except InvalidLastImage:
-            logger.critical("Last image invalid or does not exist!")
-            sys.exit(1)
-
-    elif args.clear:
+    if args.clear:
         clear = input(
             "Are you sure you want to remove the cache relating to KADAI? [y/N] "
         ).lower()
@@ -144,61 +108,61 @@ def parse_args(parser: argparse.ArgumentParser, config_object: ConfigHandler):
             logger.info("Cleared KADAI cache folders")
         else:
             logger.info("Canceled clearing cache folders...")
+
+        sys.exit(0)
+
+    if args.config:
+        config_handler.load(args.config)
+        config = config_handler.get()
+
+    if args.input:
+        themer = Themer(
+            args.input,
+            config=config,
+            override=args.override,
+            engine_name=args.backend,
+            display_progress=args.progress,
+            use_light_theme=args.light,
+        )
+
+        if args.generate:
+            themer.generate()
+        else:
+            update_theme(themer)
+
+    elif args.preserve:
+        last_image = os.path.join(config["data_directory"], "image")
+
+        if file_utils.check_if_image(last_image):
+            themer = Themer(
+                os.readlink(last_image),
+                config=config,
+                engine_name=args.backend,
+                display_progress=args.progress,
+                use_light_theme=args.light,
+            )
+            update_theme(themer)
+        else:
+            logger.critical("Last image invalid or does not exist!")
+            sys.exit(1)
+
     else:
         logger.critical("No options specified. Exiting...")
         sys.exit(1)
 
 
-def generate_theme(
-    image_path: str,
-    config: dict,
-    parsed_arguments: dict,
-    generate_image: bool,
-):
-    """Initialize Themer Engine"""
+def update_theme(themer: Themer):
+    """
+    Updates the theme, if the theme was not generate it, do so
 
-    engine_type = parsed_arguments["engine_type"]
-    override = parsed_arguments["override"]
-    show_progress = parsed_arguments["show_progress"]
-    enable_light_theme = parsed_arguments["enable_light_theme"]
-
-    themer = Themer(image_path, config=config)
-    themer.set_engine(engine_type)
-    themer.set_override(override)
-    themer.disable_progress(not show_progress)
-    if enable_light_theme:
-        themer.enable_light_theme()
-
-    if generate_image:
-        themer.generate()
-        return
-
-    # If the theme file does not exist generate it and then update to it
+    Arguments:
+        themer (kadai.Themer): the themer to update from
+    """
     try:
         themer.update()
     except file_utils.noPreGenThemeError:
         themer.generate()
         themer.update()
-
-
-def load_last_theme(config: dict, backend: str, enable_light_theme: bool):
-    """Loads the last image used if it exists"""
-    last_image = os.path.join(config["data_directory"], "image")
-    engine_type = config_handler.compare_flag_with_config(backend, config["engine"])
-
-    if file_utils.check_if_image(last_image):
-        themer = Themer(os.readlink(last_image))
-        themer.set_engine(engine_type)
-        if enable_light_theme:
-            themer.enable_light_theme()
-
-        try:
-            themer.update()
-        except file_utils.noPreGenThemeError:
-            themer.generate()
-            themer.update()
-    else:
-        raise InvalidLastImage
 
 
 def main():

@@ -1,357 +1,6 @@
-import os
-import re
-import tqdm
-import logging
-import json
-import random
-import errno
-from colorthief import ColorThief
-from PIL import Image
-
-from kadai.utils import file_utils, color_utils
-from kadai.config_handler import ConfigHandler
-from kadai.engine import BaseEngine
-from kadai import log
-
-logger = log.setup_logger(
-    __name__ + ".default", log.defaultLoggingHandler(), level=logging.WARNING
-)
-tqdm_logger = log.setup_logger(
-    __name__ + ".tqdm", log.TqdmLoggingHandler(), level=logging.WARNING
-)
-
-configHandler = ConfigHandler()
-config = configHandler.get()
-
-
-class Themer:
-    def __init__(self, image_path, out_path=config["data_directory"], config=config):
-        self.config = config
-        self.image_path = image_path
-        self.out_path = out_path
-        self.override = False
-        self.run_hooks = True
-        self.engine_name = self.config["engine"]
-        self.engine = get_engine(self.engine_name)
-        self.cache_path = self.config["cache_directory"]
-        self.theme_out_path = os.path.join(self.cache_path, "themes/")
-        self.template_path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "data/template.json"
-        )
-        self.user_templates_path = os.path.join(
-            file_utils.get_config_path(), "templates/"
-        )
-        self.user_hooks_path = os.path.join(file_utils.get_config_path(), "hooks/")
-        self.progress = self.config["progress"]
-        self.light_theme = self.config["light"]
-
-        file_utils.ensure_dir_exists(self.theme_out_path)
-
-    def set_image_path(self, path):
-        self.image_path = path
-
-    def set_out_path(self, path):
-        self.out_path = path
-
-    def set_cache_path(self, path):
-        self.cache_path = path
-        self.theme_out_path = os.path.join(self.cache_path, "themes/")
-        file_utils.ensure_dir_exists(self.theme_out_path)
-
-    def set_engine(self, engine_name):
-        self.engine_name = engine_name
-        self.engine = get_engine(engine_name)
-
-    def set_override(self, state):
-        self.override = state
-
-    def set_user_template_path(self, path):
-        self.user_templates_path = path
-
-    def set_user_hooks_path(self, path):
-        self.user_hooks_path = path
-
-    def set_run_hooks(self, condition):
-        self.run_hooks = condition
-
-    def disable_progress(self, condition):
-        self.progress = condition
-
-    def enable_light_theme(self):
-        self.light_theme = True
-
-    def get_color_palette(self):
-        theme_colors = None
-        md5_hash = file_utils.md5_file(self.image_path)[:20]
-
-        if not os.path.isfile(
-            os.path.join(
-                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
-            )
-        ):
-            raise file_utils.noPreGenThemeError(
-                "Theme file for this image does not exist!"
-            )
-
-        with open(
-            os.path.join(
-                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
-            )
-        ) as json_data:
-            theme_data = json.load(json_data)
-
-        colors = theme_data["colors"]
-
-        if self.light_theme:
-            theme_colors = colors["light"]
-        else:
-            theme_colors = colors["dark"]
-
-        return theme_colors
-
-    def generate(self):
-        tmp_file = "/tmp/kadai-tmp.png"
-
-        image_path_name = [
-            [i, "{}-{}".format(file_utils.md5_file(i)[:20], self.engine_name)]
-            for i in file_utils.get_image_list(self.image_path)
-        ]
-        unprocessed_images = (
-            image_path_name
-            if self.override
-            else get_non_generated(
-                image_path_name,
-                self.theme_out_path,
-            )
-        )
-
-        if len(unprocessed_images) > 0:
-            for i in tqdm.tqdm(
-                range(len(unprocessed_images)),
-                bar_format=log.bar_format,
-                disable=self.progress,
-            ):
-                image = unprocessed_images[i][0]
-                filename = unprocessed_images[i][1]
-                out_file = os.path.join(self.theme_out_path, "{}.json".format(filename))
-
-                create_tmp_image(image, tmp_file)
-
-                color_engine = self.engine(tmp_file)
-                palette = color_engine.get_palette()
-                dominant_color = color_utils.rgb_to_hex(
-                    color_engine.get_dominant_color()
-                )
-
-                tqdm_logger.log(
-                    15,
-                    "[{}/{}] Generating theme for {}...".format(
-                        str(i + 1), str(len(unprocessed_images)), image
-                    ),
-                )
-
-                create_template_from_palette(
-                    palette, dominant_color, str(image), out_file
-                )
-                # with open(self.template_path) as template_file:
-        else:
-            logger.info("No themes to generate.")
-
-    def update(self):
-        if os.path.isdir(self.image_path):
-            images = file_utils.get_image_list(self.image_path)
-            random.shuffle(images)
-            self.image_path = images[0]
-        elif not os.path.isfile(self.image_path):
-            raise file_utils.noPreGenThemeError("Provided file is not recognised!")
-
-        md5_hash = file_utils.md5_file(self.image_path)[:20]
-
-        if not os.path.isfile(
-            os.path.join(
-                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
-            )
-        ):
-            raise file_utils.noPreGenThemeError(
-                "Theme file for this image does not exist!"
-            )
-
-        with open(
-            os.path.join(
-                self.theme_out_path, "{}-{}.json".format(md5_hash, self.engine_name)
-            )
-        ) as json_data:
-            theme_data = json.load(json_data)
-
-        colors = theme_data["colors"]
-        primary_color = theme_data["primary"]
-        wallpaper = theme_data["wallpaper"]
-
-        if self.light_theme:
-            theme_colors = colors["light"]
-        else:
-            theme_colors = colors["dark"]
-
-        try:
-            templates = get_template_files(self.user_templates_path)
-
-            for template in templates:
-                template_path = os.path.join(self.user_templates_path, template)
-                out_file = os.path.join(self.out_path, template[:-5])
-                create_file_from_template(
-                    template_path, out_file, theme_colors, primary_color
-                )
-        except FileNotFoundError:
-            tqdm_logger.warn("No templates files found...")
-
-        # Link wallpaper to cache folder
-        link_wallpaper_path(wallpaper, self.out_path)
-
-        # Run external scripts
-        if self.run_hooks:
-            file_utils.run_hooks(
-                light_theme=self.light_theme, hooks_dir=self.user_hooks_path
-            )
-
-
-def get_engine(engine_name: str) -> BaseEngine:
-    if engine_name == "hue":
-        from kadai.engine import HueEngine
-
-        return HueEngine
-    elif engine_name == "pastel":
-        from kadai.engine import PastelEngine
-
-        return PastelEngine
-    elif engine_name == "pastel_hue":
-        from kadai.engine import PastelHueEngine
-
-        return PastelHueEngine
-    else:
-        from kadai.engine import VibranceEngine
-
-        return VibranceEngine
-
-
-def get_avaliable_engines():
-    engines = []
-    try:
-        from kadai.engine import HueEngine
-
-        engines.append("hue")
-    except:
-        pass
-
-    try:
-        from kadai.engine import VibranceEngine
-
-        engines.append("vibrance")
-    except:
-        pass
-
-    return engines
-
-
-def get_template_files(template_dir):
-    # Get all templates in the templates folder
-    try:
-        templates = [f for f in os.listdir(template_dir) if re.match(r".*\.base$", f)]
-    except FileNotFoundError:
-        raise FileNotFoundError
-
-    return templates
-
-
-def get_non_generated(images, theme_dir):
-    ungenerated_images = []
-    theme_dir = os.path.expanduser(theme_dir)
-    for i in range(len(images)):
-        filename = images[i][1]
-
-        if (
-            len(
-                [
-                    os.path.join(theme_dir, x.name)
-                    for x in os.scandir(theme_dir)
-                    if filename in x.name
-                ]
-            )
-            == 0
-        ):
-            ungenerated_images.append(images[i])
-
-    return ungenerated_images
-
-
-def clear_write_data_to_file(file_path, data):
-    if os.path.isfile(file_path):
-        open(os.path.expanduser(file_path), "w").close()
-    with open(os.path.expanduser(file_path), "a") as file:
-        file.write(data)
-
-
-def clear_write_json_to_file(file_path, json_data):
-    if os.path.isfile(file_path):
-        open(os.path.expanduser(file_path), "w").close()
-    with open(os.path.expanduser(file_path), "wb") as file:
-        file.write(
-            json.dumps(json_data, indent=4, separators=(",", ": ")).encode("utf-8")
-        )
-
-
-def create_template_from_palette(palette, dominant_color, image_path, out_path):
-    file_contents = {}
-    file_contents["colors"] = palette
-    file_contents["wallpaper"] = image_path
-    file_contents["primary"] = dominant_color
-
-    clear_write_json_to_file(out_path, file_contents)
-
-
-def create_tmp_image(image, path):
-    img = Image.open(image)
-    image_out = img.resize((100, 50), Image.NEAREST).convert("RGB")
-    image_out.save(path)
-
-
-def modify_file_with_template(filedata, colors, primary_color):
-    # Change placeholder values
-    for i in range(len(colors)):
-        filedata = filedata.replace(
-            "[color" + str(i) + "]", str(colors["color" + str(i)])
-        )
-
-    filedata = filedata.replace("[background]", str(colors["color0"]))
-    filedata = filedata.replace("[background_light]", str(colors["color8"]))
-    filedata = filedata.replace("[foreground]", str(colors["color15"]))
-    filedata = filedata.replace("[foreground_dark]", str(colors["color7"]))
-    filedata = filedata.replace("[primary]", str(primary_color))
-
-    return filedata
-
-
-def link_wallpaper_path(wallpaper, folder_path):
-    image_symlink = os.path.join(folder_path, "image")
-
-    try:
-        os.symlink(wallpaper, image_symlink)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            os.remove(image_symlink)
-            os.symlink(wallpaper, image_symlink)
-        else:
-            raise e
-
-
-def create_file_from_template(template_path, out_file, colors, primary_color):
-    with open(template_path) as template_file:
-        filedata = template_file.read()
-        filedata = modify_file_with_template(filedata, colors, primary_color)
-
-        clear_write_data_to_file(out_file, filedata)
-
-
 """
+Contains everything needed for theming
+
 kadai - Simple wallpaper manager for tiling window managers.
 Copyright (C) 2020  slapelachie
 
@@ -367,3 +16,581 @@ GNU General Public License for more details.
 
 Find the full license in the root of this project
 """
+import os
+import re
+import logging
+import json
+import random
+import errno
+from io import TextIOWrapper
+from typing import Dict, List
+import tqdm
+from PIL import Image
+
+from kadai.utils import file_utils, color_utils
+from kadai.config_handler import ConfigHandler
+from kadai.engine import BaseEngine
+from kadai import log
+
+
+TMP_FILE = "/tmp/kadai-tmp.png"
+
+logger = log.setup_logger(
+    __name__ + ".default", log.defaultLoggingHandler(), level=logging.WARNING
+)
+tqdm_logger = log.setup_logger(
+    __name__ + ".tqdm", log.TqdmLoggingHandler(), level=logging.WARNING
+)
+
+configHandler = ConfigHandler()
+config = configHandler.get()
+
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
+class Themer:
+    """The themer class, sets up everything for theming"""
+
+    def __init__(self, image_path: str, **kwargs):
+        """
+        The initialization for the themer class
+
+        Arguments:
+            image_path (str): the path to the image to be used for the theme
+            **config (idk): the config to be used
+            **override (bool): whether to override the output
+            **run_hooks (bool): should the hooks be run after
+            **display_progress (bool): should the progress be displayed
+            **use_light_theme (bool): should a light theme be used
+            **engine_name (str): the name of the engine to use
+            **out_path (str): the path to export the theme to
+            **cache_path (str): the path to cache to
+            **user_template_path (str): the path to the users templates
+            **user_hooks_path (str): the path to the users hooks
+        """
+        self._image_path = image_path
+
+        self._config = kwargs.get("config", config)
+        self._override = kwargs.get("override", False)
+        self._run_hooks = kwargs.get("run_hooks", True)
+        self._display_progress = kwargs.get(
+            "display_progress", self._config["progress"]
+        )
+        self._use_light_theme = kwargs.get("use_light_theme", self._config["light"])
+        self._engine_name = kwargs.get("engine_name", self._config["engine"])
+        self._out_path = kwargs.get("out_path", self._config["data_directory"])
+        self._cache_path = kwargs.get("cache_path", self._config["cache_directory"])
+        self._user_templates_path = kwargs.get(
+            "user_template_path",
+            os.path.join(file_utils.get_config_path(), "templates/"),
+        )
+        self._user_hooks_path = kwargs.get(
+            "user_hooks_path", os.path.join(file_utils.get_config_path(), "hooks/")
+        )
+
+        self._engine = get_engine(self._engine_name)
+        self._theme_out_path = os.path.join(self._cache_path, "themes/")
+        self._template_path = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), "data/template.json"
+        )
+
+        file_utils.ensure_dir_exists(self._theme_out_path)
+
+    def set_override(self, state: bool):
+        """
+        Updates the override
+
+        Arguments:
+            state (bool): the state to update to
+        """
+        self._override = state
+
+    def get_override(self) -> bool:
+        """
+        Gets the override
+
+        Returns:
+            (bool): the state of the override
+        """
+        return self._override
+
+    def set_run_hooks(self, state: bool):
+        """
+        Updates the run hooks state
+
+        Arguments:
+            state (bool): the state to update to
+        """
+        self._run_hooks = state
+
+    def get_run_hooks(self) -> bool:
+        """
+        Gets the run hooks state
+
+        Returns:
+            (bool): the state of run hooks
+        """
+        return self._run_hooks
+
+    def set_display_progress(self, state):
+        """
+        Sets the display progress state
+
+        Arguments:
+            state (bool): the state to update to
+        """
+        self._display_progress = state
+
+    def get_display_progress(self) -> bool:
+        """
+        Gets the display progress state
+
+        Returns:
+            (bool): the display progress state
+        """
+        return self._display_progress
+
+    def set_use_light_theme(self, state: bool):
+        """
+        Sets the use light theme state
+
+        Arguments:
+            state (bool): the state to update to
+        """
+        self._use_light_theme = state
+
+    def get_use_light_theme(self) -> bool:
+        """
+        Gets the use light theme state
+
+        Returns:
+            (bool): the use light theme state
+        """
+        return self._use_light_theme
+
+    def set_engine_name(self, engine_name: str):
+        """
+        Sets the name of the engine to be used
+
+        Arguments:
+            engine_name (str): the name of the engine to use
+        """
+        self._engine_name = engine_name
+        self._engine = get_engine(engine_name)
+
+    def get_engine_name(self) -> bool:
+        """
+        Gets the current engine name
+
+        Returns:
+            (bool): the name of the engine
+        """
+        return self._engine_name
+
+    def set_out_path(self, path: str):
+        """
+        Sets the path to export the theme to
+
+        Arguments:
+            path (str): the path to export the theme to
+        """
+        self._out_path = path
+
+    def get_out_path(self) -> str:
+        """
+        Gets the current export path
+
+        Returns:
+            (str): the current export path
+        """
+        return self._out_path
+
+    def set_cache_path(self, path: str):
+        """
+        Sets the cache path
+
+        Arguments:
+            path (str): the cache path
+        """
+        self._cache_path = path
+        self._theme_out_path = os.path.join(self._cache_path, "themes/")
+        file_utils.ensure_dir_exists(self._theme_out_path)
+
+    def get_cache_path(self) -> str:
+        """
+        Gets the current cache path
+
+        Returns:
+            (str): the cache path
+        """
+
+        return self._cache_path
+
+    def set_user_template_path(self, path: str):
+        """
+        Sets the user template path
+
+        Arguments:
+            path (str): the user template path
+        """
+        self._user_templates_path = path
+
+    def get_user_template_path(self) -> str:
+        """
+        Gets the user template path
+
+        Returns:
+            (str): the user template path
+        """
+        return self._user_templates_path
+
+    def set_user_hooks_path(self, path: str):
+        """
+        Get the user hooks path
+
+
+        Arguments:
+            path (str): the user hooks path
+        """
+        self._user_hooks_path = path
+
+    def get_user_hooks_path(self) -> str:
+        """
+        Gets the user hooks path
+
+        Returns:
+            (str): the user hooks path
+        """
+        return self._user_hooks_path
+
+    def get_color_palette(self) -> Dict:
+        """
+        Gets the generated color palette depending on if the light theme or the
+        dark theme are needed, fails if it does not exist
+
+        The format of the returned pallete is as follows
+
+        {
+            "color0": "#ffffff",
+            "color1": "#ffffff",
+            ...
+            "color15": "#ffffff"
+        }
+
+        Returns:
+            (Dict): a dictionary containing all the colors
+        """
+        md5_hash = file_utils.md5_file(self._image_path)[:20]
+        theme_out_file_path = os.path.join(
+            self._theme_out_path, f"{md5_hash}-{self._engine_name}.json"
+        )
+
+        if not os.path.isfile(theme_out_file_path):
+            raise file_utils.noPreGenThemeError(
+                "Theme file for this image does not exist!"
+            )
+
+        with open(theme_out_file_path, "r+", encoding="UTF-8") as json_data:
+            theme_data = json.load(json_data)
+
+        colors = theme_data["colors"]
+
+        return colors["light"] if self._use_light_theme else colors["dark"]
+
+    def generate(self):
+        """Generates the theme"""
+        path_image_names = [
+            [i, f"{file_utils.md5_file(i)[:20]}-{self._engine_name}"]
+            for i in file_utils.get_image_list(self._image_path)
+        ]
+        unprocessed_images = (
+            path_image_names
+            if self._override
+            else get_non_generated(
+                path_image_names,
+                self._theme_out_path,
+            )
+        )
+
+        if len(unprocessed_images) > 0:
+            for i in tqdm.tqdm(
+                range(len(unprocessed_images)),
+                bar_format=log.bar_format,
+                disable=self._display_progress,
+            ):
+                image = unprocessed_images[i][0]
+                filename = unprocessed_images[i][1]
+                out_file = os.path.join(self._theme_out_path, f"{filename}.json")
+
+                create_tmp_image(image, TMP_FILE)
+
+                color_engine = self._engine(TMP_FILE)
+                palette = color_engine.get_palette()
+                dominant_color = color_utils.rgb_to_hex(
+                    color_engine.get_dominant_color()
+                )
+
+                tqdm_logger.log(
+                    15,
+                    "[%s/%s] Generating theme for {%s}...",
+                    str(i + 1),
+                    str(len(unprocessed_images)),
+                    image,
+                )
+
+                create_template_from_palette(
+                    palette, dominant_color, str(image), out_file
+                )
+        else:
+            logger.info("No themes to generate.")
+
+    def upate(self):
+        """Updates the current theme"""
+        if os.path.isdir(self._image_path):
+            images = file_utils.get_image_list(self._image_path)
+            random.shuffle(images)
+            self._image_path = images[0]
+        elif not os.path.isfile(self._image_path):
+            raise file_utils.noPreGenThemeError("Provided file is not recognised!")
+
+        md5_hash = file_utils.md5_file(self._image_path)[:20]
+        theme_out_file_path = os.path.join(
+            self._theme_out_path, f"{md5_hash}-{self._engine_name}.json"
+        )
+
+        if not os.path.isfile(theme_out_file_path):
+            raise file_utils.noPreGenThemeError(
+                "Theme file for this image does not exist!"
+            )
+
+        with open(theme_out_file_path, "r+", encoding="UTF-8") as json_data:
+            theme_data = json.load(json_data)
+
+        colors = theme_data["colors"]
+        primary_color = theme_data["primary"]
+        wallpaper = theme_data["wallpaper"]
+
+        theme_colors = colors["light"] if self._use_light_theme else colors["dark"]
+
+        try:
+            templates = get_template_files(self._user_templates_path)
+
+            for template in templates:
+                template_path = os.path.join(self._user_templates_path, template)
+                out_file = os.path.join(self._out_path, template[:-5])
+                create_file_from_template(
+                    template_path, out_file, theme_colors, primary_color
+                )
+        except FileNotFoundError:
+            tqdm_logger.warning("No templates files found...")
+
+        # Link wallpaper to cache folder
+        symlink_image_path(wallpaper, self._out_path)
+
+        # Run external scripts
+        if self._run_hooks:
+            file_utils.run_hooks(
+                light_theme=self._use_light_theme, hooks_dir=self._user_hooks_path
+            )
+
+
+def get_engine(engine_name: str) -> BaseEngine:
+    """
+    Get the engine from the name given
+
+    Arguments:
+        engine_name (str): the name of the engine
+
+    Returns:
+        (BaseEngine): the engine class
+    """
+    # pylint: disable=import-outside-toplevel
+    if engine_name == "hue":
+        from kadai.engine import HueEngine
+
+        return HueEngine
+
+    if engine_name == "pastel":
+        from kadai.engine import PastelEngine
+
+        return PastelEngine
+    if engine_name == "pastel_hue":
+        from kadai.engine import PastelHueEngine
+
+        return PastelHueEngine
+
+    from kadai.engine import VibranceEngine
+
+    return VibranceEngine
+
+
+def get_template_files(template_directory: str) -> List[str]:
+    """
+    Get all templates in the templates folder
+
+    Arguments:
+        template_directory (str): the directory containing the templates
+
+    Returns:
+        (List[str]): a list containing all the templates within the directory
+    """
+    return [f for f in os.listdir(template_directory) if re.match(r".*\.base$", f)]
+
+
+def get_non_generated(image_paths: List[str], theme_directory: str) -> List[str]:
+    """
+    Get the files that have not been generated by the themer
+
+    Arguments:
+        image_paths (List[str]): a list containing the paths of images
+        theme_directory (str): the path in which the themes are stored
+
+    Returns:
+        (List[str]): a list containing images that have not had their themes
+                     generated
+    """
+    ungenerated_images = []
+    theme_directory = os.path.expanduser(theme_directory)
+    for image_path in image_paths:
+        filename = image_path[1]
+
+        matched_files = [
+            os.path.join(theme_directory, x.name)
+            for x in os.scandir(theme_directory)
+            if filename in x.name
+        ]
+
+        if len(matched_files) == 0:
+            ungenerated_images.append(image_path)
+
+    return ungenerated_images
+
+
+def clear_write_data_to_file(file_path: str, data: TextIOWrapper):
+    """
+    Clear the data in a file and write data to it
+
+    Arguments:
+        file_path (str): the path to the file
+        data (io.TextIOWrapper): the data to write to the file
+    """
+    if os.path.isfile(file_path):
+        with open(os.path.expanduser(file_path), "w", encoding="UTF-8"):
+            pass
+
+    with open(os.path.expanduser(file_path), "a", encoding="UTF-8") as file:
+        file.write(data)
+
+
+def clear_write_json_to_file(file_path: str, json_data):
+    """
+    Clear the data in a file and write json data to it
+
+    Arguments:
+        file_path (str): the path to the file
+        json_data (idk): the json data to write
+    """
+    if os.path.isfile(file_path):
+        with open(os.path.expanduser(file_path), "w", encoding="UTF-8"):
+            pass
+
+    with open(os.path.expanduser(file_path), "wb", encoding="UTF-8") as file:
+        file.write(
+            json.dumps(json_data, indent=4, separators=(",", ": ")).encode("utf-8")
+        )
+
+
+def create_template_from_palette(
+    palette: Dict, dominant_color: str, image_path: str, out_path: str
+):
+    """
+    Create and write the file from a template using a palette
+
+    Arguments:
+        palette (Dict): the color palette to write
+        dominant_color (str): the dominant color generated in hex
+        image_path (str): the path to the image used in the theme
+        out_path (str): the path the file will be exported to
+    """
+    file_contents = {}
+    file_contents["colors"] = palette
+    file_contents["wallpaper"] = image_path
+    file_contents["primary"] = dominant_color
+
+    clear_write_json_to_file(out_path, file_contents)
+
+
+def create_tmp_image(image_path: str, out_path: str):
+    """
+    Create a smaller version of the image so color extraction does not take as long
+
+    Arguments:
+        image_path (str): the path to the image
+        out_path (str): where to export the new image to
+    """
+    image = Image.open(image_path).resize((100, 50), Image.NEAREST).convert("RGB")
+    image.save(out_path)
+
+
+def modify_file_with_template(file_data: str, colors: Dict, primary_color: str) -> str:
+    """
+    Modify the template with data to replace
+
+    Arguments:
+        file_data (str): the template file data
+        colors (Dict): a dictionary containing all the colors
+        primary_color (str): the main color to be used
+
+    Returns:
+        (str): the modified file data
+    """
+    for i in range(len(colors)):
+        file_data = file_data.replace(
+            "[color" + str(i) + "]", str(colors["color" + str(i)])
+        )
+
+    file_data = file_data.replace("[background]", str(colors["color0"]))
+    file_data = file_data.replace("[background_light]", str(colors["color8"]))
+    file_data = file_data.replace("[foreground]", str(colors["color15"]))
+    file_data = file_data.replace("[foreground_dark]", str(colors["color7"]))
+    file_data = file_data.replace("[primary]", str(primary_color))
+
+    return file_data
+
+
+def symlink_image_path(image_path: str, folder_path: str):
+    """
+    symlink the given image to a path
+
+    Arguments:
+        image_path (str): the path to the image to be linked
+        folder_path (str): the path to the folder to symlink to
+    """
+    image_symlink = os.path.join(folder_path, "image")
+
+    try:
+        os.symlink(image_path, image_symlink)
+    except OSError as exception:
+        if exception.errno == errno.EEXIST:
+            os.remove(image_symlink)
+            os.symlink(image_path, image_symlink)
+        else:
+            raise exception
+
+
+def create_file_from_template(
+    template_file_path: str, out_file: str, colors: Dict, primary_color: str
+):
+    """
+    Create a file given a template and substitute colors within, export to the
+    out file
+
+    Arguments:
+        template_path (str): the path to the template file
+        out_file (str): where to export the new file
+        colors (Dict): the colors to use
+        primary_color (str): the primary color
+    """
+    with open(template_file_path, "r+", encoding="UTF-8") as template_file:
+        file_data = template_file.read()
+        file_data = modify_file_with_template(file_data, colors, primary_color)
+
+        clear_write_data_to_file(out_file, file_data)
