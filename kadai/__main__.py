@@ -1,9 +1,25 @@
+"""
+kadai - Simple wallpaper manager for tiling window managers.
+Copyright (C) 2020  slapelachie
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Find the full license in the root of this project
+"""
+
 import argparse
 import sys
 import os.path
 import logging
 import shutil
-import random
 
 from kadai import log
 from kadai import config_handler
@@ -11,13 +27,7 @@ from kadai.config_handler import ConfigHandler
 from kadai.utils import file_utils
 from kadai.themer import Themer
 
-logger = log.setup_logger(__name__, log.defaultLoggingHandler(), level=logging.WARNING)
-
-configHandler = ConfigHandler()
-configHandler.save()
-config = configHandler.get()
-
-WARRENTY = """Copyright (C) 2020 slapelachie
+WARRANTY = """Copyright (C) 2021 slapelachie
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,8 +40,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details."""
 
 
+class InvalidLastImage(Exception):
+    """Raised when the last image used does not exist or is invalid"""
+
+
 def get_args():
-    """ Get the args parsed from the command line and does arg handling stuff """
+    """Get the args parsed from the command line and does arg handling stuff"""
 
     arg = argparse.ArgumentParser(description="Generate and switch wallpaper themes")
 
@@ -72,21 +86,24 @@ def get_args():
     return arg
 
 
-def parse_args(parser):
-    global config
+def parse_args(parser: argparse.ArgumentParser, config_object: ConfigHandler):
     args = parser.parse_args()
+    config = config_object.get()
+    logger = log.setup_logger(
+        __name__, log.defaultLoggingHandler(), level=logging.WARNING
+    )
 
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(1)
 
     if args.warranty:
-        print(WARRENTY)
-        exit(0)
+        print(WARRANTY)
+        sys.exit(0)
 
     if args.c:
-        configHandler.load(args.c)
-        config = configHandler.get()
+        config_object.load(args.c)
+        config = config_object.get()
 
     # Determine flags from config and cli
     engine_type = config_handler.compare_flag_with_config(
@@ -100,43 +117,21 @@ def parse_args(parser):
     )
 
     if args.i:
-        # Initialize Themer Engine
-        themer = Themer(args.i, config=config)
-        themer.set_engine(engine_type)
-        themer.set_override(args.override)
-        themer.disable_progress(not show_progress)
-        if enable_light_theme:
-            themer.enable_light_theme()
-
-        if args.g:
-            themer.generate()
-            return
-
-        # If the theme file does not exist generate it and then update to it
-        try:
-            themer.update()
-        except file_utils.noPreGenThemeError:
-            themer.generate()
-            themer.update()
-    elif args.p:
-        # Check if the cached image exists, if it does update to that
-        last_image = os.path.join(config["data_directory"], "image")
-        engine_type = config_handler.compare_flag_with_config(
-            args.backend, config["engine"]
+        generate_theme(
+            args.i,
+            config,
+            {
+                "engine_type": engine_type,
+                "override": args.override,
+                "show_progress": show_progress,
+                "enable_light_theme": enable_light_theme,
+            },
+            args.g,
         )
-
-        if file_utils.check_if_image(last_image):
-            themer = Themer(os.readlink(last_image))
-            themer.set_engine(engine_type)
-            if enable_light_theme:
-                themer.enable_light_theme()
-
-            try:
-                themer.update()
-            except file_utils.noPreGenThemeError:
-                themer.generate()
-                themer.update()
-        else:
+    elif args.p:
+        try:
+            load_last_theme(config, args.backend, enable_light_theme)
+        except InvalidLastImage:
             logger.critical("Last image invalid or does not exist!")
             sys.exit(1)
 
@@ -145,10 +140,7 @@ def parse_args(parser):
             "Are you sure you want to remove the cache relating to KADAI? [y/N] "
         ).lower()
         if clear == "y":
-            try:
-                shutil.rmtree(config["cache_directory"])
-            except:
-                raise
+            shutil.rmtree(config["cache_directory"])
             logger.info("Cleared KADAI cache folders")
         else:
             logger.info("Canceled clearing cache folders...")
@@ -157,35 +149,72 @@ def parse_args(parser):
         sys.exit(1)
 
 
-def main():
-    # Create required directories
+def generate_theme(
+    image_path: str,
+    config: dict,
+    parsed_arguments: dict,
+    generate_image: bool,
+):
+    """Initialize Themer Engine"""
+
+    engine_type = parsed_arguments["engine_type"]
+    override = parsed_arguments["override"]
+    show_progress = parsed_arguments["show_progress"]
+    enable_light_theme = parsed_arguments["enable_light_theme"]
+
+    themer = Themer(image_path, config=config)
+    themer.set_engine(engine_type)
+    themer.set_override(override)
+    themer.disable_progress(not show_progress)
+    if enable_light_theme:
+        themer.enable_light_theme()
+
+    if generate_image:
+        themer.generate()
+        return
+
+    # If the theme file does not exist generate it and then update to it
     try:
-        os.makedirs(config["cache_directory"], exist_ok=True)
-        os.makedirs(config["data_directory"], exist_ok=True)
-        os.makedirs(file_utils.get_config_path(), exist_ok=True)
-    except:
-        raise
+        themer.update()
+    except file_utils.noPreGenThemeError:
+        themer.generate()
+        themer.update()
+
+
+def load_last_theme(config: dict, backend: str, enable_light_theme: bool):
+    """Loads the last image used if it exists"""
+    last_image = os.path.join(config["data_directory"], "image")
+    engine_type = config_handler.compare_flag_with_config(backend, config["engine"])
+
+    if file_utils.check_if_image(last_image):
+        themer = Themer(os.readlink(last_image))
+        themer.set_engine(engine_type)
+        if enable_light_theme:
+            themer.enable_light_theme()
+
+        try:
+            themer.update()
+        except file_utils.noPreGenThemeError:
+            themer.generate()
+            themer.update()
+    else:
+        raise InvalidLastImage
+
+
+def main():
+    """The main function that gets called"""
+    config_object = ConfigHandler()
+    config_object.save()
+    config = config_object.get()
+
+    # Create required directories
+    os.makedirs(config["cache_directory"], exist_ok=True)
+    os.makedirs(config["data_directory"], exist_ok=True)
+    os.makedirs(file_utils.get_config_path(), exist_ok=True)
 
     parser = get_args()
-    parse_args(parser)
+    parse_args(parser, config_object)
 
 
 if __name__ == "__main__":
     main()
-
-"""
-kadai - Simple wallpaper manager for tiling window managers.
-Copyright (C) 2020  slapelachie
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-Find the full license in the root of this project
-"""
