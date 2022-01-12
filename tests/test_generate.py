@@ -1,14 +1,16 @@
 import unittest
-import shutil
+import warnings
 import os
-from kadai.utils import file_utils
+import shutil
+
+from PIL import Image
+
 from kadai import themer
-from kadai.engine import HueEngine
 from kadai.config_handler import ConfigHandler
 
-out_dir = "/tmp/github-runner-kadai/"
-assets_dir = "tests/assets/"
-config_path = os.path.join(assets_dir, "config.json")
+OUT_DIR = "/tmp/github-runner-kadai/"
+ASSETS_DIR = "tests/assets/"
+config_path = os.path.join(ASSETS_DIR, "config.json")
 
 configHandler = ConfigHandler()
 configHandler.set_config_path(config_path)
@@ -16,191 +18,130 @@ config = configHandler.get()
 
 
 class TestEngines(unittest.TestCase):
-    def test_template_find(self):
+    def setUp(self):
+        self._themer = themer.Themer(
+            "tests/assets/test.jpg",
+            config=config,
+            run_hooks=False,
+            out_path=OUT_DIR,
+            cache_path=OUT_DIR,
+        )
+
+    def test_setget_override(self):
+        self._themer.set_override(False)
+        self.assertFalse(self._themer.get_override())
+
+        self._themer.set_override(True)
+        self.assertTrue(self._themer.get_override())
+
+    def test_setget_run_hooks(self):
+        self._themer.set_run_hooks(False)
+        self.assertFalse(self._themer.get_run_hooks())
+
+        self._themer.set_run_hooks(True)
+        self.assertTrue(self._themer.get_run_hooks())
+
+    def test_setget_display_progress(self):
+        self._themer.set_display_progress(False)
+        self.assertFalse(self._themer.get_display_progress())
+
+        self._themer.set_display_progress(True)
+        self.assertTrue(self._themer.get_display_progress())
+
+    def test_setget_use_light_theme(self):
+        self._themer.set_use_light_theme(False)
+        self.assertFalse(self._themer.get_use_light_theme())
+
+        self._themer.set_use_light_theme(True)
+        self.assertTrue(self._themer.get_use_light_theme())
+
+    def test_setget_engine_name(self):
+        self._themer.set_engine_name("test123")
+        self.assertEqual(self._themer.get_engine_name(), "test123")
+
+    def test_setget_out_path(self):
+        self._themer.set_out_path("/tmp")
+        self.assertEqual(self._themer.get_out_path(), "/tmp")
+
+    def test_setget_cache_path(self):
+        self._themer.set_cache_path("/tmp")
+        self.assertEqual(self._themer.get_cache_path(), "/tmp")
+
+    def test_setget_user_template_path(self):
+        self._themer.set_user_template_path("/tmp")
+        self.assertEqual(self._themer.get_user_template_path(), "/tmp")
+
+    def test_setget_user_hooks_path(self):
+        self._themer.set_user_hooks_path("/tmp")
+        self.assertEqual(self._themer.get_user_hooks_path(), "/tmp")
+
+    def test_get_color_palette(self):
+        warnings.warn("Test not implemented")
+
+    def test_generate(self):
+        warnings.warn("Test not implemented")
+
+    def test_update(self):
+        warnings.warn("Test not implemented")
+
+    def test_get_engine(self):
+        warnings.warn("Test not implemented")
+
+    def test_get_template_files(self):
         # Test if can find all 2 template files
         template_files = themer.get_template_files(
-            os.path.join(assets_dir, "templates/")
+            os.path.join(ASSETS_DIR, "templates/")
         )
         self.assertEqual(len(template_files), 2)
 
-    def test_createValueSpreadDictionary(self):
-        values = [0.1, 0.3, 0.5, 0.7, 0.9]
-        pallete = themer.createValueSpreadDictionary(values, (255, 0, 0))
-        self.assertEqual(
-            pallete,
-            {
-                "0.1": "#190000",
-                "0.3": "#4c0000",
-                "0.5": "#7f0000",
-                "0.7": "#b20000",
-                "0.9": "#e50000",
-            },
-        )
+    def test_get_non_generated(self):
+        warnings.warn("Test not implemented")
 
-    def test_createValueColorPallete(self):
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
-        pallete = themer.createValueColorPallete(colors)
-        self.assertEqual(
-            pallete,
-            {
-                "color0": {
-                    "0.1": "#190000",
-                    "0.3": "#4c0000",
-                    "0.5": "#7f0000",
-                    "0.7": "#b20000",
-                    "0.9": "#e50000",
-                },
-                "color1": {
-                    "0.1": "#001900",
-                    "0.3": "#004c00",
-                    "0.5": "#007f00",
-                    "0.7": "#00b200",
-                    "0.9": "#00e500",
-                },
-                "color2": {
-                    "0.1": "#000019",
-                    "0.3": "#00004c",
-                    "0.5": "#00007f",
-                    "0.7": "#0000b2",
-                    "0.9": "#0000e5",
-                },
-            },
-        )
+    def test_clear_write_data_to_file(self):
+        warnings.warn("Test not implemented")
 
-    def test_generate_one(self):
-        # Testing for generating one theme
-        shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
+    def test_clear_write_json_to_file(self):
+        warnings.warn("Test not implemented")
 
-        generator = themer.Themer(
-            "tests/assets/test.jpg", out_path=out_dir, config=config
-        )
-        generator.setCachePath(out_dir)
-        generator.generate()
+    def test_create_template_from_palette(self):
+        warnings.warn("Test not implemented")
 
-        self.assertIs(
-            os.path.isfile(
-                os.path.join(out_dir, "themes/31084f2c8577234aeb55-vibrance.json")
-            ),
-            True,
-        )
+    def test_create_tmp_image(self):
+        tmp_image_path = os.path.join(OUT_DIR, "test_create_tmp_image.jpg")
+        themer.create_tmp_image(os.path.join(ASSETS_DIR, "test.jpg"), tmp_image_path)
+        image = Image.open(tmp_image_path)
+        self.assertEqual(image.size, (100, 50))
+        self.assertEqual(image.mode, "RGB")
 
-    def test_generate_all(self):
-        # Testing for generating all images into themes
-        shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
+        os.remove(tmp_image_path)
 
-        generator = themer.Themer("tests/assets/", out_path=out_dir, config=config)
-        generator.setCachePath(out_dir)
-        generator.generate()
+    def test_modify_file_with_template(self):
+        warnings.warn("Test not implemented")
+        # file_data = """[color0], [background], [background_light], [foreground],\
+        # [foreground_dark], [primary]"""
+        # colors = {
+        #    "color0": "#f00000",
+        #    "color8": "#ff0000",
+        #    "color15": "#fff000",
+        #    "color7": "#ffff00",
+        # }
+        # primary_color = "#ffffff"
 
-        self.assertTrue(
-            os.path.isfile(
-                os.path.join(out_dir, "themes/31084f2c8577234aeb55-vibrance.json")
-            )
-        )
+        # updated_data = themer.modify_file_with_template(
+        #    file_data, colors, primary_color
+        # )
 
-    def test_update(self):
-        # Test if update passes when theme file exists
-        generator = themer.Themer(
-            "tests/assets/test.jpg", out_path=out_dir, config=config
-        )
-        generator.setCachePath(out_dir)
-        generator.setRunHooks(True)
-        generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
-        generator.setUserHooksPath(os.path.join(assets_dir, "hooks/"))
-        generator.update()
+        # self.assertEqual(updated_data, "{'color0': #ffffff, 'primary': #ff0000}")
 
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "colors.sh")))
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "out")))
+    def test_symlink_image_path(self):
+        symlink_out = os.path.join(OUT_DIR, "image")
+        themer.symlink_image_path(os.path.join(ASSETS_DIR, "test.jpg"), OUT_DIR)
 
-    def test_update_no_templates(self):
-        generator = themer.Themer(
-            "tests/assets/test.jpg", out_path=out_dir, config=config
-        )
-        generator.setCachePath(out_dir)
-        generator.setRunHooks(True)
-        generator.setUserTemplatePath(out_dir)
-        generator.update()
+        self.assertTrue(os.path.islink(symlink_out))
+        os.remove(symlink_out)
 
-    def test_update_light_theme(self):
-        # Test if update passes when theme file exists
-        generator = themer.Themer(
-            "tests/assets/test.jpg", out_path=out_dir, config=config
-        )
-        generator.setCachePath(out_dir)
-        generator.setRunHooks(False)
-        generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
-        generator.enableLightTheme()
-        generator.update()
-
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "colors.sh")))
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
-
-    def test_update_folder(self):
-        generator = themer.Themer(assets_dir, out_path=out_dir, config=config)
-        generator.setCachePath(out_dir)
-        generator.setRunHooks(False)
-        generator.setUserTemplatePath(os.path.join(assets_dir, "templates/"))
-        generator.generate()
-        generator.update()
-
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "colors.sh")))
-        self.assertTrue(os.path.isfile(os.path.join(out_dir, "Xdefaults")))
-
-    def test_update_file_not_recognised(self):
-        generator = themer.Themer(
-            "tests/assets/test.txt", out_path=out_dir, config=config
-        )
-        generator.setRunHooks(False)
-        try:
-            generator.update()
-            raise ValueError("How!?")
-        except FileUtils.noPreGenThemeError:
-            pass
-
-    def test_update_not_find_generated(self):
-        # Test if fail if theme file does not exist
-        generator = themer.Themer(
-            "tests/assets/test.jpg", out_path=out_dir, config=config
-        )
-        generator.setCachePath(out_dir)
-        generator.setRunHooks(False)
-        shutil.rmtree(out_dir, ignore_errors="FileNotFoundError")
-        try:
-            generator.update()
-            raise ValueError("Passed Succesfully?!")
-        except FileUtils.noPreGenThemeError:
-            pass
-
-    def test_class_options(self):
-        generator = themer.Themer(
-            "tests/assets/test.png", out_path="/tmp", config=config
-        )
-
-        generator.setImagePath("tests/assets/test.jpg")
-        self.assertEqual(generator.image_path, "tests/assets/test.jpg")
-
-        generator.setOutPath(out_dir)
-        self.assertEqual(generator.out_path, out_dir)
-
-        generator.setEngine("hue")
-        self.assertEqual(generator.engine_name, "hue")
-        self.assertEqual(generator.engine, HueEngine)
-
-        generator.setOverride(True)
-        self.assertEqual(generator.override, True)
-
-        generator.setUserTemplatePath("/tmp/templates")
-        self.assertEqual(generator.user_templates_path, "/tmp/templates")
-
-        generator.setRunHooks(False)
-        self.assertEqual(generator.run_hooks, False)
-
-        generator.disableProgress(False)
-        self.assertEqual(generator.disable_progress, False)
-
-        generator.enableLightTheme()
-        self.assertEqual(generator.light_theme, True)
+    def test_create_file_from_template(self):
+        warnings.warn("Test not implemented")
 
 
 if __name__ == "__main__":
