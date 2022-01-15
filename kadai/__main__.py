@@ -160,7 +160,7 @@ def update_theme(themer: Themer):
     """
     try:
         themer.update()
-    except file_utils.noPreGenThemeError:
+    except file_utils.NoPreGenThemeError:
         themer.generate()
         themer.update()
 

@@ -92,7 +92,7 @@ class Themer:
             os.path.abspath(os.path.dirname(__file__)), "data/template.json"
         )
 
-        file_utils.ensure_dir_exists(self._theme_out_path)
+        os.makedirs(self._theme_out_path, exist_ok=True)
 
     def set_override(self, state: bool):
         """
@@ -212,7 +212,7 @@ class Themer:
         """
         self._cache_path = path
         self._theme_out_path = os.path.join(self._cache_path, "themes/")
-        file_utils.ensure_dir_exists(self._theme_out_path)
+        os.makedirs(self._theme_out_path, exists_ok=True)
 
     def get_cache_path(self) -> str:
         """
@@ -284,7 +284,7 @@ class Themer:
         )
 
         if not os.path.isfile(theme_out_file_path):
-            raise file_utils.noPreGenThemeError(
+            raise file_utils.NoPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
@@ -349,7 +349,7 @@ class Themer:
             random.shuffle(images)
             self._image_path = images[0]
         elif not os.path.isfile(self._image_path):
-            raise file_utils.noPreGenThemeError("Provided file is not recognised!")
+            raise file_utils.NoPreGenThemeError("Provided file is not recognised!")
 
         md5_hash = file_utils.md5_file(self._image_path)[:20]
         theme_out_file_path = os.path.join(
@@ -357,7 +357,7 @@ class Themer:
         )
 
         if not os.path.isfile(theme_out_file_path):
-            raise file_utils.noPreGenThemeError(
+            raise file_utils.NoPreGenThemeError(
                 "Theme file for this image does not exist!"
             )
 
@@ -388,7 +388,8 @@ class Themer:
         # Run external scripts
         if self._run_hooks:
             file_utils.run_hooks(
-                light_theme=self._use_light_theme, hooks_dir=self._user_hooks_path
+                use_light_theme=self._use_light_theme,
+                hooks_directory=self._user_hooks_path,
             )
 
 
