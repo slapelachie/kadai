@@ -212,7 +212,7 @@ class Themer:
         """
         self._cache_path = path
         self._theme_out_path = os.path.join(self._cache_path, "themes/")
-        os.makedirs(self._theme_out_path, exists_ok=True)
+        os.makedirs(self._theme_out_path, exist_ok=True)
 
     def get_cache_path(self) -> str:
         """

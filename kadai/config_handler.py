@@ -105,14 +105,14 @@ class ConfigHandler:
         if not os.path.isdir(config_path):
             os.mkdir(config_path)
 
-        with open(self._config_file_out_path, "wb", encoding="UTF-8") as config_file:
+        with open(self._config_file_out_path, "wb") as config_file:
             config_file.write(
                 json.dumps(self._config, indent=4, separators=(",", ": ")).encode(
                     "utf-8"
                 )
             )
 
-    def load(self, config_file_path: str):
+    def load_config(self, config_file_path: str):
         """
         Loads and overrides the config from a given path
 
@@ -137,9 +137,9 @@ def parse_config(config_file_path: str) -> dict:
     config = copy.copy(DEFAULT_CONFIG)
 
     try:
-        with open(config_file_path, "rb", encoding="UTF-8") as config_file:
+        with open(config_file_path, "rb") as config_file:
             loaded_config = json.load(config_file)
-            config.set_config(loaded_config)
+            config.update(loaded_config)
     except IOError:
         pass
 

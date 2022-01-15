@@ -12,9 +12,9 @@ OUT_DIR = "/tmp/github-runner-kadai/"
 ASSETS_DIR = "tests/assets/"
 config_path = os.path.join(ASSETS_DIR, "config.json")
 
-configHandler = ConfigHandler()
-configHandler.set_config_path(config_path)
-config = configHandler.get()
+config_handler = ConfigHandler()
+config_handler.set_config_file_path(config_path)
+config = config_handler.get_config()
 
 
 class TestEngines(unittest.TestCase):

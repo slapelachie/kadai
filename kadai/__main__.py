@@ -112,7 +112,7 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
         sys.exit(0)
 
     if args.config:
-        config_handler.load(args.config)
+        config_handler.load_config(args.config)
         config = config_handler.get_config()
 
     if args.input:

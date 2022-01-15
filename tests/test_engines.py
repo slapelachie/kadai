@@ -1,8 +1,9 @@
 import unittest
+import warnings
 from kadai.engine import vibrance, hue, base_engine, color_thief_engine, pastel
 from kadai.utils import color_utils
 
-test_image = "tests/assets/test.jpg"
+TEST_IMAGE = "tests/assets/test.jpg"
 
 
 class TestEngine(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestEngine(unittest.TestCase):
 class TestBaseEngine(TestEngine):
     def setUp(self):
         super().setUp()
-        self._engine = base_engine.BaseEngine(test_image)
+        self._engine = base_engine.BaseEngine(TEST_IMAGE)
 
     def test_generate(self):
         with self.assertRaises(NotImplementedError):
@@ -36,26 +37,17 @@ class TestBaseEngine(TestEngine):
         with self.assertRaises(TypeError):
             self._engine.get_palette()
 
-    def test_make_palette(self):
-        palette = self._engine._make_palette(
-            self._color_list, (1, 0.9, 0.8, 0.7, 0.6, 0.5), (1, 0.9, 0.8)
-        )
-        self.assertEqual(len(palette), 16)
-
-
-class TestBaseEngine_functions(unittest.TestCase):
-    def test_modify_rgb_value_saturation(self):
-        color = base_engine.modify_rgb_value_saturation((255, 0, 0), 0.5, 0.5)
-        self.assertEqual(color, "#7f3f3f")
-
 
 class TestColorThiefEngine(TestEngine):
     def setUp(self):
-        self._engine = color_thief_engine.ColorThiefEngine(test_image)
+        self._engine = color_thief_engine.ColorThiefEngine(TEST_IMAGE)
 
     def test_generate(self):
         colors = self._engine.generate()
         self.assertEqual(len(colors), 7)
+
+    def test_gen_colors(self):
+        warnings.warn("Test not implemented")
 
     def test_get_dominant_color(self):
         color = self._engine.get_dominant_color()
@@ -65,7 +57,7 @@ class TestColorThiefEngine(TestEngine):
 
 class TestHueEngine(TestEngine):
     def setUp(self):
-        self._engine = hue.HueEngine(test_image)
+        self._engine = hue.HueEngine(TEST_IMAGE)
 
     def test_generate(self):
         colors = self._engine.generate()
@@ -84,6 +76,9 @@ class TestHue_functions(unittest.TestCase):
         for color in colors:
             self.assertGreaterEqual(color_utils.rgb_to_hsv(color)[1], 0.4)
 
+    def test_shift_hues_distance(self):
+        warnings.warn("Test not implemented")
+
     def test_get_min_distance_hues(self):
         distance = float(hue.get_min_distance_hues((255, 100, 0)))
         self.assertAlmostEqual(distance, -0.065359477)
@@ -92,7 +87,7 @@ class TestHue_functions(unittest.TestCase):
 class TestPastelEngine(TestEngine):
     def setUp(self):
         super().setUp()
-        self._engine = pastel.PastelEngine(test_image)
+        self._engine = pastel.PastelEngine(TEST_IMAGE)
 
     def test_generate(self):
         colors = self._engine.generate()
@@ -114,7 +109,7 @@ class TestPastelEngine(TestEngine):
 class TestVibranceEngine(TestEngine):
     def setUp(self):
         super().setUp()
-        self._engine = vibrance.VibranceEngine(test_image)
+        self._engine = vibrance.VibranceEngine(TEST_IMAGE)
 
     def test_generate(self):
         colors = self._engine.generate()
@@ -123,6 +118,11 @@ class TestVibranceEngine(TestEngine):
 
 
 class TestVibrance_functions(unittest.TestCase):
+    def test_sort_by_vibrance(self):
+        sorted_colors = vibrance.sort_by_vibrance([(10, 10, 0), (255, 100, 0)])
+        self.assertIsInstance(sorted_colors, list)
+        self.assertEqual(sorted_colors, [(255, 100, 0), (10, 10, 0)])
+
     def test_calculate_vibrance(self):
         color_vibrance = vibrance.calculate_vibrance((200, 0, 0))
         self.assertAlmostEqual(color_vibrance, 0.94068627)
@@ -137,65 +137,12 @@ class TestVibrance_functions(unittest.TestCase):
             self.assertLessEqual(color_vibrance[1], 1)
             self.assertGreaterEqual(color_vibrance[1], 0)
 
-    def test_sort_by_vibrance(self):
-        sorted_colors = vibrance.sort_by_vibrance([(10, 10, 0), (255, 100, 0)])
-        self.assertIsInstance(sorted_colors, list)
-        self.assertEqual(sorted_colors, [(255, 100, 0), (10, 10, 0)])
+    def test_sort_to_list(self):
+        warnings.warn("Test not implemented")
 
+    def test_sort_colors(self):
+        warnings.warn("Test not implemented")
 
-"""
-class TestVibranceEngine(unittest.TestCase):
-    def test_color_output_length(self):
-        result = vibrance.VibranceEngine("tests/assets/test.jpg").generate()
-        self.assertEqual(len(result), 7)
-
-    def test_color_length(self):
-        result = vibrance.VibranceEngine("tests/assets/test.jpg").generate()
-        for color in result:
-            self.assertEqual(len(color), 3)
-
-    def test_get_image_brightness(self):
-        brightness = vibrance.get_image_brightness("tests/assets/test.jpg")
-        self.assertEqual(brightness, 44.200175908777595)
-
-    def test_sort_by_vibrance(self):
-        sorted_list = vibrance.sort_by_vibrance([(255, 0, 0), (200, 0, 0)])
-        self.assertEqual(sorted_list, [(255, 0, 0), (200, 0, 0)])
-
-
-class TestHueEngine(unittest.TestCase):
-    def test_color_output_length(self):
-        result = genhue.HueEngine("tests/assets/test.jpg").generate()
-        self.assertEqual(len(result), 7)
-
-    def test_color_length(self):
-        result = genhue.HueEngine("tests/assets/test.jpg").generate()
-        for color in result:
-            self.assertEqual(len(color), 3)
-
-    def test_generateBaseColors(self):
-        base_colors = genhue.generateBaseColors((255, 0, 0))
-        self.assertEqual(
-            base_colors,
-            [
-                (0, 0, 255),
-                (255, 0, 0),
-                (0, 255, 0),
-                (255, 255, 0),
-                (0, 0, 255),
-                (255, 0, 255),
-                (0, 255, 255),
-            ],
-        )
-
-    def test_getDominantColorFromImage(self):
-        dominant_color = genhue.getDominantColorFromImage("tests/assets/test.jpg")
-        self.assertEqual(dominant_color, (128, 178, 178))
-
-    def test_shiftHuesByDistance(self):
-        new_colors = genhue.shiftHuesByDistance([(255, 0, 0), (125, 0, 0)], 0.5)
-        self.assertEqual(new_colors, [(0, 255, 255), (0, 125, 125)])
-"""
 
 if __name__ == "__main__":
     unittest.main()

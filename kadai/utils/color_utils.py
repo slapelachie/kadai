@@ -159,3 +159,53 @@ def get_rgb_hue(color: tuple) -> int:
     """
     hsv_color = rgb_to_hsv(color)
     return hsv_color[0]
+
+
+def modify_rgb_value_saturation(color: tuple, value: float, saturation: float) -> tuple:
+    """
+    Modifies both the value and saturation of a rgb color
+
+    Arguments:
+        color (tuple): the color to be modified
+        value (float): what to change the value to
+        saturation (float): what to change the saturation to
+
+    Returns:
+        (string): The outputed hex value
+    """
+    return rgb_to_hex(change_rgb_saturation(change_rgb_value(color, value), saturation))
+
+
+def make_palette(colors: tuple, values: tuple, saturations: tuple) -> dict:
+    """
+    Makes a palette that allows modifications to the values and saturation
+    Mainly used for xresources and hence uses color 0-15
+
+    Arguments:
+        colors (tuple): A list of colors to be made
+        values (tuple): How much to change each value by, follows:
+                        (bg_dark, bg_light, fg_dark, fg_light, default_dark, default_light)
+        saturation (tuple): How much to change the saturation, follows:
+                            (black, white, color)
+
+    Returns:
+        (dict): A dictionary containing all the colors from 0-15
+    """
+    new_colors = {}
+    bg_dark, bg_light, fg_dark, fg_light, default_dark, default_light = values
+    black, white, color = saturations
+
+    new_colors["color0"] = modify_rgb_value_saturation(colors[0], bg_dark, black)
+    new_colors["color7"] = modify_rgb_value_saturation(colors[0], bg_light, white)
+    new_colors["color8"] = modify_rgb_value_saturation(colors[0], fg_dark, black)
+    new_colors["color15"] = modify_rgb_value_saturation(colors[0], fg_light, white)
+
+    for i in range(6):
+        new_colors[f"color{str(i + 1)}"] = modify_rgb_value_saturation(
+            colors[i + 1], default_dark, color
+        )
+        new_colors[f"color{str(i + 9)}"] = modify_rgb_value_saturation(
+            colors[i + 1], default_light, color
+        )
+
+    return new_colors

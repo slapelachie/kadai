@@ -41,6 +41,15 @@ class TestColorUtils(unittest.TestCase):
         self._rgb = (255, 0, 0)
         self._hex = "#ff0000"
         self._hsv = (0, 1, 1)
+        self._color_list = (
+            self._rgb,
+            self._rgb,
+            self._rgb,
+            self._rgb,
+            self._rgb,
+            self._rgb,
+            self._rgb,
+        )
 
     def test_rgb_to_hex(self):
         hex = color_utils.rgb_to_hex(self._rgb)
@@ -85,6 +94,16 @@ class TestColorUtils(unittest.TestCase):
     def test_get_rgb_hue(self):
         hue = color_utils.get_rgb_hue(self._rgb)
         self.assertEqual(hue, 0)
+
+    def test_make_palette(self):
+        palette = color_utils.make_palette(
+            self._color_list, (1, 0.9, 0.8, 0.7, 0.6, 0.5), (1, 0.9, 0.8)
+        )
+        self.assertEqual(len(palette), 16)
+
+    def test_modify_rgb_value_saturation(self):
+        color = color_utils.modify_rgb_value_saturation((255, 0, 0), 0.5, 0.5)
+        self.assertEqual(color, "#7f3f3f")
 
 
 if __name__ == "__main__":
