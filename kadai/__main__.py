@@ -86,7 +86,7 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
         config_handler (kadai.ConfigHandler): the config handler
     """
     args = parser.parse_args()
-    config = config_handler.get()
+    config = config_handler.get_config()
     logger = log.setup_logger(
         __name__, log.defaultLoggingHandler(), level=logging.WARNING
     )
@@ -113,7 +113,7 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
 
     if args.config:
         config_handler.load(args.config)
-        config = config_handler.get()
+        config = config_handler.get_config()
 
     if args.input:
         themer = Themer(
@@ -168,8 +168,8 @@ def update_theme(themer: Themer):
 def main():
     """The main function that gets called"""
     config_object = ConfigHandler()
-    config_object.save()
-    config = config_object.get()
+    config_object.save_config()
+    config = config_object.get_config()
 
     # Create required directories
     os.makedirs(config["cache_directory"], exist_ok=True)

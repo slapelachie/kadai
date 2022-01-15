@@ -42,8 +42,8 @@ tqdm_logger = log.setup_logger(
     __name__ + ".tqdm", log.TqdmLoggingHandler(), level=logging.WARNING
 )
 
-configHandler = ConfigHandler()
-config = configHandler.get()
+config_handler = ConfigHandler()
+config = config_handler.get_config()
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class Themer:
