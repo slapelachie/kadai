@@ -13,7 +13,7 @@ class TestFileUtils(unittest.TestCase):
 
     def test_get_directory_images(self):
         images = file_utils.get_directory_images("tests/assets/")
-        self.assertEqual(len(images), 1)
+        self.assertEqual(len(images), 3)
 
     def test_get_image_list_one(self):
         images = file_utils.get_image_list("tests/assets/test.jpg")
@@ -25,7 +25,7 @@ class TestFileUtils(unittest.TestCase):
 
     def test_get_image_list_all(self):
         images = file_utils.get_image_list("tests/assets/")
-        self.assertEqual(len(images), 1)
+        self.assertEqual(len(images), 3)
 
     def test_get_image_list_none(self):
         with self.assertRaises(FileNotFoundError):
@@ -42,13 +42,13 @@ class TestColorUtils(unittest.TestCase):
         self._hex = "#ff0000"
         self._hsv = (0, 1, 1)
         self._color_list = (
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
+            (0, 0, 0),
+            (255, 0, 0),
+            (0, 255, 0),
+            (0, 0, 255),
+            (255, 255, 0),
+            (0, 255, 255),
+            (255, 255, 255),
         )
 
     def test_rgb_to_hex(self):
@@ -70,6 +70,10 @@ class TestColorUtils(unittest.TestCase):
     def test_chage_hsv_color(self):
         hsv = color_utils.change_hsv_value(self._hsv, 0.5)
         self.assertEqual(hsv, (0, 1, 0.5))
+
+    def test_change_hsv_hue(self):
+        hsv = color_utils.change_hsv_hue(self._hsv, 2)
+        self.assertEqual(hsv, (2, 1, 1))
 
     def test_change_hsv_saturation(self):
         hsv = color_utils.change_hsv_saturation(self._hsv, 0.5)
@@ -100,6 +104,27 @@ class TestColorUtils(unittest.TestCase):
             self._color_list, (1, 0.9, 0.8, 0.7, 0.6, 0.5), (1, 0.9, 0.8)
         )
         self.assertEqual(len(palette), 16)
+        self.assertEqual(
+            palette,
+            {
+                "color0": "#ff0000",
+                "color7": "#e51616",
+                "color8": "#cc0000",
+                "color15": "#b21111",
+                "color1": "#991e1e",
+                "color9": "#7f1919",
+                "color2": "#1e991e",
+                "color10": "#197f19",
+                "color3": "#1e1e99",
+                "color11": "#19197f",
+                "color4": "#99991e",
+                "color12": "#7f7f19",
+                "color5": "#1e9999",
+                "color13": "#197f7f",
+                "color6": "#991e1e",
+                "color14": "#7f1919",
+            },
+        )
 
     def test_modify_rgb_value_saturation(self):
         color = color_utils.modify_rgb_value_saturation((255, 0, 0), 0.5, 0.5)

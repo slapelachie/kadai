@@ -27,6 +27,16 @@ class TestEngines(unittest.TestCase):
             cache_path=OUT_DIR,
         )
 
+    def test_init(self):
+        self._themer = themer.Themer(
+            "tests/assets/test.jpg",
+            config=config,
+            override=True,
+            run_hooks=False,
+            out_path=OUT_DIR,
+            cache_path=OUT_DIR,
+        )
+
     def test_setget_override(self):
         self._themer.set_override(False)
         self.assertFalse(self._themer.get_override())

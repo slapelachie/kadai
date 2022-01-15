@@ -28,25 +28,32 @@ class TestConfigHandler(unittest.TestCase):
 
     def test_setget_config(self):
         # TODO: implement set test
-        warnings.warn("Test partially implemented")
+        config = {"test123": False}
+        self._config_handler.set_config(config)
+        self.assertEqual(self._config_handler.get_config(), config)
+
+    def test_setget_config_items(self):
         self.assertEqual(len(self._config_handler.get_config()), 6)
 
         shutil.rmtree(OUT_DIR, ignore_errors="FileNotFoundError")
 
-    def test_save(self):
-        self._config_handler.set_config_file_out_path(
-            os.path.join(OUT_DIR, "config.json")
-        )
+    def test_save_load(self):
+        config_out_path = os.path.join(OUT_DIR, "config.json")
+
+        self._config_handler.set_config_file_out_path(config_out_path)
+
+        config = self._config_handler.get_config()
+        config["light"] = True
+
+        self._config_handler.set_config(config)
         self._config_handler.save_config()
 
-        self.assertTrue(os.path.isfile(os.path.join(OUT_DIR, "config.json")))
+        self.assertTrue(os.path.isfile(config_out_path))
+
+        self._config_handler.load_config(config_out_path)
+        self.assertEqual(self._config_handler.get_config()["light"], True)
 
         shutil.rmtree(OUT_DIR, ignore_errors="FileNotFoundError")
-
-    def test_load(self):
-        self._config_handler.load_config("tests/assets/config.json")
-
-        self.assertEqual(self._config_handler.get_config()["light"], False)
 
 
 class TestConfigHandlerFunctions(unittest.TestCase):

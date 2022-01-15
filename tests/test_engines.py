@@ -9,13 +9,18 @@ TEST_IMAGE = "tests/assets/test.jpg"
 class TestEngine(unittest.TestCase):
     def setUp(self):
         self._rgb = (255, 0, 0)
+        self._rgb_black = (0, 0, 0)
+        self._rgb_white = (255, 255, 255)
+        self._rgb_grey = (105, 105, 105)
+        self._rgb_above_sat = (255, 150, 150)
+        self._rgb_below_sat = (239, 204, 255)
         self._color_list = (
             self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
-            self._rgb,
+            self._rgb_black,
+            self._rgb_white,
+            self._rgb_grey,
+            self._rgb_above_sat,
+            self._rgb_below_sat,
             self._rgb,
         )
 
@@ -77,7 +82,38 @@ class TestHue_functions(unittest.TestCase):
             self.assertGreaterEqual(color_utils.rgb_to_hsv(color)[1], 0.4)
 
     def test_shift_hues_distance(self):
-        warnings.warn("Test not implemented")
+        colors = [(255, 0, 0)]
+
+        shifted_colors = hue.shift_hues_distance(colors, 0.1)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (255, 153, 0))
+
+        shifted_colors = hue.shift_hues_distance(colors, 0.25)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (127, 255, 0))
+
+        shifted_colors = hue.shift_hues_distance(colors, 0.5)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (0, 255, 255))
+
+        shifted_colors = hue.shift_hues_distance(colors, 0.75)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (127, 0, 255))
+
+        shifted_colors = hue.shift_hues_distance(colors, 1)
+        self.assertEqual(shifted_colors[0], (255, 0, 0))
+
+        shifted_colors = hue.shift_hues_distance(colors, 1.1)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (255, 153, 0))
+
+        shifted_colors = hue.shift_hues_distance(colors, -0.9)
+        self.assertNotEqual(shifted_colors[0], (255, 0, 0))
+        self.assertEqual(shifted_colors[0], (255, 152, 0))
+
+        shifted_colors = hue.shift_hues_distance([(13, 184, 24)], 0.2)
+        self.assertNotEqual(shifted_colors[0], (13, 184, 24))
+        self.assertEqual(shifted_colors[0], (13, 138, 184))
 
     def test_get_min_distance_hues(self):
         distance = float(hue.get_min_distance_hues((255, 100, 0)))
@@ -119,9 +155,11 @@ class TestVibranceEngine(TestEngine):
 
 class TestVibrance_functions(unittest.TestCase):
     def test_sort_by_vibrance(self):
-        sorted_colors = vibrance.sort_by_vibrance([(10, 10, 0), (255, 100, 0)])
+        sorted_colors = vibrance.sort_by_vibrance(
+            [(200, 100, 0), (10, 10, 0), (255, 100, 0)]
+        )
         self.assertIsInstance(sorted_colors, list)
-        self.assertEqual(sorted_colors, [(255, 100, 0), (10, 10, 0)])
+        self.assertEqual(sorted_colors, [(255, 100, 0), (200, 100, 0), (10, 10, 0)])
 
     def test_calculate_vibrance(self):
         color_vibrance = vibrance.calculate_vibrance((200, 0, 0))
