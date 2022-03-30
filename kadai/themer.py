@@ -65,6 +65,7 @@ class Themer:
             **cache_path (str): the path to cache to
             **user_template_path (str): the path to the users templates
             **user_hooks_path (str): the path to the users hooks
+            **custom_theme_path (str): the path to the custom theme
         """
         self._image_path = image_path
 
@@ -85,6 +86,8 @@ class Themer:
         self._user_hooks_path = kwargs.get(
             "user_hooks_path", os.path.join(file_utils.get_config_path(), "hooks/")
         )
+
+        self._custom_theme_path = kwargs.get("custom_theme_path", None)
 
         self._engine = get_engine(self._engine_name)
         self._theme_out_path = os.path.join(self._cache_path, "themes/")
@@ -261,6 +264,23 @@ class Themer:
         """
         return self._user_hooks_path
 
+    def set_custom_theme_path(self, path: str):
+        """
+        Set the custom theme path
+
+        Arguments:
+            path (str): the path to the theme file
+        """
+        self._custom_theme_path = path
+
+    def get_custom_theme_path(self) -> str:
+        """
+        Get the path to the custom theme file
+
+        Returns:
+            (str): the path to the custom theme file
+        """
+
     def get_color_palette(self) -> Dict:
         """
         Gets the generated color palette depending on if the light theme or the
@@ -323,7 +343,6 @@ class Themer:
                 create_tmp_image(image, TMP_FILE)
 
                 color_engine = self._engine(TMP_FILE)
-                palette = color_engine.get_palette()
                 dominant_color = color_utils.rgb_to_hex(
                     color_engine.get_dominant_color()
                 )
@@ -336,9 +355,15 @@ class Themer:
                     image,
                 )
 
-                create_template_from_palette(
-                    palette, dominant_color, str(image), out_file
-                )
+                if not self._custom_theme_path:
+                    palette = color_engine.get_palette()
+                    create_template_from_palette(
+                        palette, dominant_color, str(image), out_file
+                    )
+                else:
+                    create_template_from_custom_palette(
+                        self._custom_theme_path, dominant_color, str(image), out_file
+                    )
         else:
             logger.info("No themes to generate.")
 
@@ -517,6 +542,18 @@ def create_template_from_palette(
     file_contents["primary"] = dominant_color
 
     clear_write_json_to_file(out_path, file_contents)
+
+
+def create_template_from_custom_palette(
+    custom_theme_path: str, dominant_color: str, image_path: str, out_path: str
+):
+    custom_theme_data = {}
+    with open(custom_theme_path, "r+", encoding="UTF-8") as json_data:
+        custom_theme_data = json.load(json_data)
+
+    create_template_from_palette(
+        custom_theme_data, dominant_color, image_path, out_path
+    )
 
 
 def create_tmp_image(image_path: str, out_path: str):

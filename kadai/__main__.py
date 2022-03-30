@@ -53,6 +53,9 @@ def get_args():
     arg.add_argument("-i", "--input", metavar='"path/to/dir"', help="the input file")
     arg.add_argument("-p", "--preserve", action="store_true", help="Use last set theme")
     arg.add_argument(
+        "-t", "--theme", metavar='"path/to/dir"', help="path to custom theme"
+    )
+    arg.add_argument(
         "-c",
         "--config",
         metavar='"path/to/config"',
@@ -132,6 +135,9 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
 
         if args.light:
             themer.set_use_light_theme(args.light)
+
+        if args.theme:
+            themer.set_custom_theme_path(args.theme)
 
         if args.generate:
             themer.generate()
