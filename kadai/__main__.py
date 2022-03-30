@@ -119,11 +119,19 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
         themer = Themer(
             args.input,
             config=config,
-            override=args.override,
-            engine_name=args.backend,
-            display_progress=args.progress,
-            use_light_theme=args.light,
         )
+
+        if args.override:
+            themer.set_override(args.override)
+
+        if args.backend:
+            themer.set_engine_name(args.backend)
+
+        if args.progress:
+            themer.set_display_progress(args.progress)
+
+        if args.light:
+            themer.set_use_light_theme(args.light)
 
         if args.generate:
             themer.generate()
@@ -137,10 +145,20 @@ def parse_args(parser: argparse.ArgumentParser, config_handler: ConfigHandler):
             themer = Themer(
                 os.readlink(last_image),
                 config=config,
-                engine_name=args.backend,
-                display_progress=args.progress,
-                use_light_theme=args.light,
             )
+
+            if args.override:
+                themer.set_override(args.override)
+
+            if args.backend:
+                themer.set_engine_name(args.backend)
+
+            if args.progress:
+                themer.set_display_progress(args.progress)
+
+            if args.light:
+                themer.set_use_light_theme(args.light)
+
             update_theme(themer)
         else:
             logger.critical("Last image invalid or does not exist!")

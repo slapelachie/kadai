@@ -52,7 +52,12 @@ class TestColorThiefEngine(TestEngine):
         self.assertEqual(len(colors), 7)
 
     def test_gen_colors(self):
-        warnings.warn("Test not implemented")
+        colors = self._engine._gen_colors()
+        self.assertLessEqual(len(colors), 16)
+        with self.assertRaises(color_thief_engine.TooFewColors):
+            self._engine = color_thief_engine.ColorThiefEngine(
+                "tests/assets/one-color.jpg"
+            )
 
     def test_get_dominant_color(self):
         color = self._engine.get_dominant_color()
@@ -176,10 +181,36 @@ class TestVibrance_functions(unittest.TestCase):
             self.assertGreaterEqual(color_vibrance[1], 0)
 
     def test_sort_to_list(self):
-        warnings.warn("Test not implemented")
+        colors = [(255, 255, 0), (255, 0, 0)]
+        colors_list = [(255, 0, 0), (255, 255, 0), (0, 255, 0)]
+
+        sorted_colors = vibrance.sort_to_list(colors, colors_list)
+        self.assertListEqual(sorted_colors, [(255, 0, 0), (255, 255, 0)])
 
     def test_sort_colors(self):
-        warnings.warn("Test not implemented")
+        colors = [
+            (175, 146, 184),
+            (159, 129, 184),
+            (139, 125, 184),
+            (117, 114, 184),
+            (95, 127, 207),
+            (94, 157, 184),
+            (90, 183, 183),
+            (68, 184, 136),
+        ]
+        expected_colors = [
+            (159, 129, 184),
+            (139, 125, 184),
+            (117, 114, 184),
+            (95, 127, 207),
+            (94, 157, 184),
+            (90, 183, 183),
+            (68, 184, 136),
+        ]
+
+        sorted_colors = vibrance.sort_colors(colors)
+        self.assertEqual(len(sorted_colors), 7)
+        self.assertEqual(sorted_colors, expected_colors)
 
 
 if __name__ == "__main__":

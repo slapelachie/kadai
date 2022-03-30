@@ -13,7 +13,7 @@ class TestFileUtils(unittest.TestCase):
 
     def test_get_directory_images(self):
         images = file_utils.get_directory_images("tests/assets/")
-        self.assertEqual(len(images), 3)
+        self.assertEqual(len(images), 4)
 
     def test_get_image_list_one(self):
         images = file_utils.get_image_list("tests/assets/test.jpg")
@@ -25,7 +25,7 @@ class TestFileUtils(unittest.TestCase):
 
     def test_get_image_list_all(self):
         images = file_utils.get_image_list("tests/assets/")
-        self.assertEqual(len(images), 3)
+        self.assertEqual(len(images), 4)
 
     def test_get_image_list_none(self):
         with self.assertRaises(FileNotFoundError):

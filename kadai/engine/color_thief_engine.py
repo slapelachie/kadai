@@ -23,6 +23,10 @@ from kadai.engine import BaseEngine
 from kadai.utils import color_utils
 
 
+class TooFewColors(Exception):
+    """Raised when there are not enough colors to continue processing"""
+
+
 class ColorThiefEngine(BaseEngine):
     """The base engine for generating colors from colorthief"""
 
@@ -45,7 +49,7 @@ class ColorThiefEngine(BaseEngine):
         raw_colors = color_cmd(color_count=16, quality=3)
 
         if len(raw_colors) <= 8:
-            raise Exception("Not enough colors were generated")
+            raise TooFewColors("Not enough colors were generated")
 
         return raw_colors
 

@@ -342,7 +342,7 @@ class Themer:
         else:
             logger.info("No themes to generate.")
 
-    def upate(self):
+    def update(self):
         """Updates the current theme"""
         if os.path.isdir(self._image_path):
             images = file_utils.get_image_list(self._image_path)
@@ -493,7 +493,7 @@ def clear_write_json_to_file(file_path: str, json_data):
         with open(os.path.expanduser(file_path), "w", encoding="UTF-8"):
             pass
 
-    with open(os.path.expanduser(file_path), "wb", encoding="UTF-8") as file:
+    with open(os.path.expanduser(file_path), "wb") as file:
         file.write(
             json.dumps(json_data, indent=4, separators=(",", ": ")).encode("utf-8")
         )

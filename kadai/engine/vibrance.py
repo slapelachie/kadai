@@ -103,7 +103,7 @@ def sort_to_list(
 
 def sort_colors(colors: List[Tuple[int]]) -> List[Tuple[int]]:
     """
-    Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 8)
+    Sorts the colors based on a sorting algorithim, and returns a list of colors (length of 7)
 
     Arguments:
         colors (List[Tuple[int]]): list of rgb formatted colors
