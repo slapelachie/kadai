@@ -87,7 +87,12 @@ class Themer:
             "user_hooks_path", os.path.join(file_utils.get_config_path(), "hooks/")
         )
 
-        self._custom_theme_path = kwargs.get("custom_theme_path", None)
+        self._custom_theme_path = kwargs.get(
+            "custom_theme_path",
+            self._config["custom_theme_path"]
+            if self._config["use_custom_theme"]
+            else None,
+        )
 
         self._engine = get_engine(self._engine_name)
         self._theme_out_path = os.path.join(self._cache_path, "themes/")

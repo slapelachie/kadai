@@ -27,9 +27,13 @@ DEFAULT_CONFIG = {
     "engine": "vibrance",
     "data_directory": file_utils.get_data_path(),
     "cache_directory": file_utils.get_cache_path(),
+    "custom_theme_path": os.path.join(
+        file_utils.get_config_path(), "themes/config.json"
+    ),
     "light": False,
     "progress": False,
     "debug": False,
+    "use_custom_theme": False,
 }
 
 
