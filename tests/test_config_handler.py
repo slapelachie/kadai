@@ -33,7 +33,7 @@ class TestConfigHandler(unittest.TestCase):
         self.assertEqual(self._config_handler.get_config(), config)
 
     def test_setget_config_items(self):
-        self.assertEqual(len(self._config_handler.get_config()), 6)
+        self.assertEqual(len(self._config_handler.get_config()), 8)
 
         shutil.rmtree(OUT_DIR, ignore_errors="FileNotFoundError")
 

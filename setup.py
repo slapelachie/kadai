@@ -4,7 +4,7 @@ LONG_DESC = open("README.md").read()
 
 setup(
     name="kadai",
-    version="1.1.0b0",
+    version="1.2.0a0",
     description="Simple wallpaper manager for tiling window managers.",
     long_description_content_type="text/markdown",
     long_description=LONG_DESC,
@@ -23,6 +23,6 @@ setup(
     packages=["kadai", "kadai.engine", "kadai.utils"],
     entry_points={"console_scripts": ["kadai=kadai.__main__:main"]},
     include_package_data=True,
-    install_requires=["Pillow", "tqdm", "colorthief"],
+    install_requires=["Pillow>=9.1.0", "tqdm", "colorthief"],
     zip_safe=False,
 )

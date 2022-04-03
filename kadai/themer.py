@@ -569,7 +569,7 @@ def create_tmp_image(image_path: str, out_path: str):
         image_path (str): the path to the image
         out_path (str): where to export the new image to
     """
-    image = Image.open(image_path).resize((100, 50), Image.NEAREST).convert("RGB")
+    image = Image.open(image_path).resize((100, 50), Image.Resampling.NEAREST).convert("RGB")
     image.save(out_path)
 
 
